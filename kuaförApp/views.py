@@ -85,13 +85,20 @@ def firma_düzenle(request, pk, firma_kod):
     print(request.user.username)
     
     # Execute common operations regardless of user
-    firma = get_object_or_404(Firma, pk=pk, firma_kod=firma_kod)
+    try:
+        firma = get_object_or_404(Firma, pk=pk, firma_kod=firma_kod)
+    except:
+        messages.error(request,'Firma Bulunamadı')
+        return redirect('admin_dashboard',request.user.user_frm_kod)
 
     if firma.firma_kod == "-1":
          messages.error(request, 'Bu Firma Düzenlenemez')
          return redirect(request.META.get('HTTP_REFERER'))
     yetki = get_object_or_404(Yetki, user=request.user)
-    if not (request.user.username == "orqerr" or (request.user.user_frm_kod == "-1" and yetki.firma_duzenle)):
+    if not (
+        (request.user.username == 'orqerr' and request.user.user_frm_kod == "-1") or 
+        (request.user.user_frm_kod == "-1" and yetki.firma_düzenle and request.user.user_tag == "Destek") 
+    ):
         messages.error(request, "Firma düzenleme yetkiniz bulunmuyor")
         return redirect(request.META.get('HTTP_REFERER'))
     # POST kontrolü
