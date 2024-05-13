@@ -417,15 +417,17 @@ myModal.show();
         </li>
         
         <li>
-          <a href="#">
+          <a href="#"data-bs-toggle="modal" data-bs-target="#parameterModal">
             <span class="icon">
               <ion-icon name="settings-outline"></ion-icon>
             </span>
-            <span class="title">Settings</span>
+            <span class="title">Parametre</span>
           </a>
+          
         </li>
+       
         <li>
-          <a href="#">
+          <a href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
             <span class="icon">
               <ion-icon name="lock-closed-outline"></ion-icon>
             </span>
@@ -475,7 +477,7 @@ myModal.show();
       <div class="cardBox">
         <div class="card">
           <div>
-            <div class="numbers">{{toplam_siparis}}</div>
+            <div class="boldText">{{toplam_siparis}}</div>
             <div class="cardName">Toplam Sipariş</div>
           </div>
           <div class="iconBx">
@@ -484,7 +486,7 @@ myModal.show();
         </div>
         <div class="card" data-bs-toggle="modal" data-bs-target="#exampleModal">
           <div>
-            <div class="numbers">{{firma.firma_kod}}</div>
+            <div class="boldText">{{firma.firma_kod}}</div>
             <div class="cardName">Şirket Bilgilerim</div>
           </div>
           <div class="iconBx">
@@ -585,9 +587,48 @@ myModal.show();
               </div>
           </div>
       </div>
+      <div class="modal fade" id="errorReport" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Hata Kodu</th>
+                    <th class="text-center"scope="col">Sil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for error in errors  %}
+                  <tr>
+                   
+                    <th scope="row">{{error.error_code}}</th>
+                    <td class="text-center">
+                      <form action="{% url "hata_sil" error.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                      </form>
+                    </td>
+                   
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
         <div class="card">
           <div>
-            <div class="numbers">284</div>
+            <div class="boldText">284</div>
             <div class="cardName">Comments</div>
           </div>
           <style>
@@ -604,16 +645,29 @@ myModal.show();
             <ion-icon id="rated" name="star"></ion-icon>
           </div>
         </div>
+        {% if firma.firma_kod == '-1' %}
         <div class="card">
           <div>
-            <div class="numbers">{{firma.firma_bit_tar|date:"j F Y"}}</div>
-            <div class="cardName">Anlaşma Bitiş Tarihi</div>
+            <div data-bs-toggle="modal" data-bs-target="#errorReport" class="boldText">{{hata_sayisi}}</div>
+            <div class="cardName">Bildirilen Hatalar</div>
           </div>
           <div class="iconBx">
-            <ion-icon name="calendar-outline"></ion-icon>
+            <ion-icon name="bulb-outline"></ion-icon>
           </div>
         </div>
       </div>
+      {% else %}
+      <div class="card">
+        <div>
+          <div class="boldText">{{firma.firma_bit_tar|date:"j F Y"}}</div>
+          <div class="cardName">Anlaşma Bitiş Tarihi</div>
+        </div>
+        <div class="iconBx">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+      </div>
+    </div>
+    {% endif %}
       <!-- ================ Order Details List ================= -->
 <!-- ================ Masa Details List ================= -->
       <div class="details">
@@ -880,16 +934,20 @@ myModal.show();
                   <span class="status return">Pasif</span>
                 </td> {% endif %} <td>
                  <!-- Button trigger modal -->
-                 <button type="button" 
                  {% if not request.user.yetkiler.konum_güncelle %}
+                 <button type="button" 
+                
                      class="badge bg-danger kat-edit-btn" disabled>
                      Yetkiniz Yok
+                </button>
                  {% else %}
+                 <button
                      class="badge bg-primary kat-edit-btn"
                      data-kat-id="{{ kat.id }}"
                      data-kat-ad="{{ kat.kat_ad }}"
                      data-kat-durum="{{ kat.kat_durum }}">
                      Düzenle
+                    </button>
                  {% endif %}
              </button>
                 </td>
@@ -1614,12 +1672,15 @@ myModal.show();
                 <label for="formFile" class="form-label">Ürün Fotoğrafı Seçin</label>
                 <input class="form-control" name="urun_img" type="file" id="formFile">
               </div>
+              {% if price_in_use %}
+
               <div class="mb-3">
                 <label for="basic-url" class="form-label">Ürün Fiyatı Giriniz.</label>
                 <div class="input-group">
                   <input type="text" name="urun_fiyat" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
                 </div>
               </div>
+              {% endif %}
               <div class="mb-3">
                 <label for="basic-url" class="form-label">Kayıt Eden Kullanıcı</label>
                 <div class="input-group">
@@ -1911,17 +1972,56 @@ myModal.show();
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <ul class="list-group">
-          <li class="list-group-item">
-            <strong>UGYY:001</strong> Ürün güncelleme sırasında bu kod ile karşılaştıysanız. Ürün güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
-            Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="{% url 'hata_bildir' kod='UGYY:001' %}">bildirin.</a> 
-          </li>
-          <li class="list-group-item">
-            <strong>KGYY:001</strong> Kullanıcı güncelleme sırasında bu kod ile karşılaştıysanız. Kullanıcı güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
-            Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="{% url 'hata_bildir' kod='KGYY:001' %}">bildirin.</a> 
-          </li>
-          <!-- Diğer öğeler buraya eklenebilir -->
-        </ul>
+        <form id="errorForm" action="{% url 'hata_bildir' %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" id="error_code" name="error_code">
+          <input type="hidden" id="error_url" name="error_url">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <strong>UGYY:001</strong> Ürün güncelleme sırasında bu kod ile karşılaştıysanız. Ürün güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
+              Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="#" class="error-link" data-error-code="UGYY:001">bildirin.</a> 
+            </li>
+            <li class="list-group-item">
+              <strong>KGYY:001</strong> Kullanıcı güncelleme sırasında bu kod ile karşılaştıysanız. Kullanıcı güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
+              Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="#" class="error-link" data-error-code="KGYY:001">bildirin.</a> 
+            </li>
+            <!-- Diğer öğeler buraya eklenebilir -->
+          </ul>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" form="errorForm" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Linklere tıklanınca verileri form içine doldur
+  document.querySelectorAll('.error-link').forEach(link => {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      const errorCode = this.getAttribute('data-error-code');
+      const errorUrl = this.getAttribute('href');
+      document.getElementById('error_code').value = errorCode;
+      document.getElementById('error_url').value = errorUrl;
+      // Modal'ı kapat
+      $('#helpModal').modal('hide');
+      // Formu submit et
+      document.getElementById('errorForm').submit();
+    });
+  });
+</script>
+<div class="modal fade" id="parameterModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1930,7 +2030,66 @@ myModal.show();
     </div>
   </div>
 </div>
-
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'sifre_degistir' request.user.id %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Eski Şifrenizi Giriniz.</label>
+              <div class="input-group">
+                <input type="password" name="old_password" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                <span class="input-group-text"><i class="fas fa-eye" id="toggleOldPassword"></i></span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Yeni Şifrenizi Tekrar Giriniz.</label>
+              <div class="input-group">
+                <input type="password" name="new_password" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                <span class="input-group-text"><i class="fas fa-eye" id="toggleNewPassword"></i></span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Yeni Şifrenizi Tekrar Giriniz.</label>
+              <div class="input-group">
+                <input type="password" name="new_password2" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                <span class="input-group-text"><i class="fas fa-eye" id="toggleNewPassword2"></i></span>
+              </div>
+            </div>
+        
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark"></i></button>
+      <button type="submit" class="btn btn-primary">Şifreyi Değiştir <i class="fa-solid fa-key"></i></button>
+    </div>
+  </form>
+    <script>
+        // Şifreleri göster/gizle
+        const togglePassword = document.querySelectorAll('#toggleOldPassword, #toggleNewPassword, #toggleNewPassword2');
+        togglePassword.forEach(icon => {
+            icon.addEventListener('click', () => {
+                const inputField = icon.closest('.input-group').querySelector('input');
+                if (inputField.type === 'password') {
+                    inputField.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    inputField.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+    </script>
+      
+    </div>
+  </div>
+</div>
 {% endif %}
 
 <!-- =========== Kullanıcı Ekleme Modalı =========  -->

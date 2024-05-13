@@ -93,5 +93,10 @@ urlpatterns = [
     path('siparis_ekranina_git/<str:firma_kod>',views.siparis_ekranina_git,name="siparis_ekranina_git"),
     path('güncelleme_talep_et/<str:firma_kod>',views.request_an_update,name="güncelleme_talep_et"),
      path('güncelleme_talebini_geri_al/<str:firma_kod>',views.undo_update_request,name="güncelleme_talebini_geri_al"),
-    path('güncelleme_talebini_kapat/<str:firma_kod>',views.close_update_request,name="güncelleme_talebini_kapat")
+    path('güncelleme_talebini_kapat/<str:firma_kod>',views.close_update_request,name="güncelleme_talebini_kapat"),
+    # user işlemleri
+    path('sifre_degistir/<int:user_id>',views.change_password,name="sifre_degistir"),
+    # hata bildirimi
+    path('hata_bildir/',views.create_error_report,name="hata_bildir"),
+    path('hata_sil/<int:id>',views.delete_error_report,name="hata_sil"),
   ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

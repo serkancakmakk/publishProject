@@ -39,6 +39,7 @@ def user_permissions(request):
             'guncelleme_talepleri':yetkiler.guncelleme_talepleri,
             'hata_talepleri':yetkiler.hata_talepleri,
             'firma_durum_degistir':yetkiler.firma_durum_degistir,
+            'konum_güncelle':yetkiler.konum_güncelle,
         }
     else:
         yetki_dict = {}

@@ -21,6 +21,7 @@ class Firma(models.Model):
     firma_bit_tar = models.DateTimeField(null=False, blank=False)
     firma_create_user = models.CharField(max_length=255, null=True, blank=True)
     firma_create_time = models.DateTimeField(auto_now_add=True)
+    price_in_use = models.BooleanField(default=False)
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import AbstractUser, Group, Permission
 import uuid
@@ -199,7 +200,7 @@ class Urun(models.Model):
     urun_kategori = models.ForeignKey(Kategori, on_delete=models.CASCADE)
     urun_durum = models.BooleanField(default=True)
     urun_img = models.ImageField(upload_to=urun_resim_yolu, null=True, blank=True)
-    urun_fiyat = models.IntegerField()
+    urun_fiyat = models.IntegerField(null=True,blank=True)
     urun_kayit_user = models.CharField(max_length=20)
     urun_kayit_zaman = models.DateTimeField(auto_now_add=True)
 class Siparis(models.Model):
@@ -240,4 +241,5 @@ class ShortUrl(models.Model):
     url_qr_code = models.ImageField(upload_to=get_media_path)
     def __str__(self):
         return self.url
-    
+class ErrorReport(models.Model):
+    error_code = models.CharField(max_length=15)

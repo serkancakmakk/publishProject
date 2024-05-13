@@ -1,11 +1,11 @@
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 import openpyxl
 
 from .forms import FirmaEkle, KatEkle, KategoriEkle, MasaEkle, UpdateRequestForm, UrunEkle, UserEkle, UserUpdateForm, FirmaDüzenle, KatGüncelle, MasaDüzenle
 
-from .models import Firma, FirmaUser, Kat, Kategori, Masa, ShortUrl, SiparisUrun, UpdateRequest, Urun, Yetki
+from .models import ErrorReport, Firma, FirmaUser, Kat, Kategori, Masa, ShortUrl, SiparisUrun, UpdateRequest, Urun, Yetki
 import random,string
 from django.contrib import messages
 # Firma oluşturma ve listeleme ekranı
@@ -1378,10 +1378,15 @@ def admin_dashboard(request, firma_kod):
 
     # Retrieve total number of orders for the given firm
     toplam_siparis = Siparis.objects.filter(siparis_frm_kod=firma_kod).count()
-
+    #fiyat kullanılıyormu kontrol et ona göre formdan kaldır
+    price_in_use = Firma.objects.get(firma_kod=firma_kod).price_in_use
     # Retrieve all products for the given firm
     urunler = Urun.objects.filter(urun_frm_kod=firma_kod)
-
+    errors = None
+    hata_sayisi = None
+    if firma.firma_kod == '-1':
+        errors = ErrorReport.objects.all()
+        hata_sayisi = ErrorReport.objects.count()
     # Check if view_all parameter is present in the request
     view_all = request.GET.get('view_all')
 
@@ -1428,6 +1433,9 @@ def admin_dashboard(request, firma_kod):
     kalan_gun = (datetime.combine(firma.firma_bit_tar, datetime.min.time()) - datetime.now()).days if firma.firma_bit_tar else None
 
     context = {
+        'errors':errors,
+        'hata_sayisi':hata_sayisi,
+        'price_in_use':price_in_use,
         'company_update_form':company_update_form,
         'firmalar': firmalar,
         'masaDüzenle': MasaDüzenle(),
@@ -1496,8 +1504,11 @@ def yetki_ver(request, firma_kod, uuid4):
             (request.user.user_frm_kod == firma_kod and yetki.kullanici_yetkilendir)):
         messages.error(request, 'Kullanıcıyı Yetkilendiremezsiniz. Hata Kodu : KYYY:001')
         return redirect(request.META.get('HTTP_REFERER'))
+    
     user = get_object_or_404(FirmaUser, unique_id=uuid4)
-
+    if user.username == 'orqerr' and user.user_frm_kod == '-1':
+            messages.error(request, 'Admin Kullanıcısına herhangi bir güncelleme yapılamaz')
+            return redirect(request.META.get('HTTP_REFERER'))
     # Eğer kullanıcıya henüz bir yetki atanmamışsa, yeni bir Yetki nesnesi oluşturun
     yetki, created = Yetki.objects.get_or_create(user=user)
 
@@ -1562,6 +1573,9 @@ from datetime import date
 def user_update(request, firma_kod, uuid4):
     today = date.today()
     user = get_object_or_404(FirmaUser, unique_id=uuid4)
+    if user.username == 'orqerr' and user.user_frm_kod == '-1':
+        messages.error(request, 'Admin Kullanıcısına herhangi bir güncelleme yapılamaz')
+        return redirect(request.META.get('HTTP_REFERER'))
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
     yetki = get_object_or_404(Yetki,user=request.user)
     # Yetki kontrolü
@@ -1724,3 +1738,59 @@ def undo_update_request(request,firma_kod):
         update_request.is_active =True
         update_request.save()
         return redirect(request.META.get('HTTP_REFERER'))
+def change_password(request, user_id):
+    try:
+        user = get_object_or_404(FirmaUser, id=user_id)
+    except:
+        messages.info(request, 'Kullanıcı Bulunamadı')
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    if not request.user.id == user_id: 
+        messages.info(request, 'Bu işlem gerçekleştirilemez')
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    if request.method != "POST":
+        messages.info(request, 'Bu istekler kabul edilmez')
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    old_password = request.POST.get('old_password')
+    new_password = request.POST.get('new_password')
+    new_password2 = request.POST.get('new_password2')
+
+    if old_password != user.password:
+        messages.info(request, 'Eski Şifreleriniz Uyuşmuyor')
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    if new_password != new_password2:
+        messages.info(request, 'Yeni Şifreleriniz Uyuşmuyor')
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    user.password = new_password
+    user.save()
+    messages.success(request, 'Şifre Değiştirildi')
+    return redirect(request.META.get('HTTP_REFERER'))
+    
+def create_error_report(request):
+    if request.method == 'POST':
+        error_code = request.POST.get('error_code')
+        error_url = request.POST.get('error_url')
+        
+        # Hata raporu modeline veriyi kaydet
+        ErrorReport.objects.create(error_code=error_code)
+        
+        # İstenilen yere yönlendir
+        return HttpResponseRedirect('/success/')  # Başka bir URL'ye yönlendirme
+
+    return render(request, 'your_template.html')  # Hata sayfasını göster
+def delete_error_report(request,id):
+    user = request.user
+    if not request.method =="POST":
+        messages.success(request, 'Hata Bildirimi Silinmedi')
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not user.username == 'orqerr' and user.user_frm_kod == '-1':
+        messages.success(request, 'Bu işleme yetkiniz yok.')
+        return redirect(request.META.get('HTTP_REFERER'))
+    error_report = get_object_or_404(ErrorReport,id = id)
+    error_report.delete()
+    messages.success(request, 'Hata bildirimi silindi')
+    return redirect(request.META.get('HTTP_REFERER'))
