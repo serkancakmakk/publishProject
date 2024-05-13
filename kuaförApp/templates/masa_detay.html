@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<li class="d-none">{{message}}</li>
+{% endfor %}
+{% endif %}
+{% if messages %}
+{% for message in messages  %}
+<script>
+    Swal.fire({
+        {% if message.tags == 'success' %}
+        title: "Başarılı",
+        {% else %}
+        title: "Hata",
+        {% endif %}
+        text: "{{message}}",
+        imageUrl: "{{ short_url.url_qr_code.url }}",
+        imageWidth: 400,
+        imageHeight: 400,
+        imageAlt: "Custom image"
+      });
+</script>
+{% endfor %}
+{% endif %}
+<style>
+    body {
+        background-image: url("{% static 'project-image/indir1.png' %}");
+        /* Arkaplan resminin tüm sayfa boyunca yayılmasını istiyorsanız aşağıdaki özellikleri ekleyebilirsiniz */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+</style>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title">Masa Bilgileri - {{ firma.firma_adi }} / {{ masa.masa_kat }} / {{ masa.masa_num }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <img src="{{ short_url.url_qr_code.url }}" class="img-fluid mb-3" alt="QR Code">
+                    </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#qrModal">
+                            QR Code Oluştur
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <ul class="nav nav-tabs mb-4">
+
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#table-details">Masa Detayları</a>
+                </li>
+                <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#table-settings">
+        <i class="fa-solid fa-gear"></i>
+        <span id="masa_ayar">
+            <strong>Masa Ayarları</strong></span>
+    </a>
+</li>
+<li class="nav-item">
+    <a class="btn btn-warning"href="{% url "admin_dashboard" request.user.user_frm_kod %}">Firma Sayfasına Dön</a>
+</li>
+<style>
+    #masa_ayar {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .nav-link:hover #masa_ayar {
+        opacity: 1;
+    }
+</style>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="table-details">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Firma</th>
+                                    <td>{{ masa.masa_firma.firma_adi }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Firma Kodu</th>
+                                    <td>{{ masa.masa_frm_kod }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Masa Numarası</th>
+                                    <td>{{ masa.masa_num }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Kat</th>
+                                    <td>{{ masa.masa_kat }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Durum</th>
+                                    {% if masa.masa_durum == True %}
+                                    <td>Aktif</td>
+                                    {% else %}
+                                    <td>Pasif</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Kayıt Tarihi</th>
+                                    <td>{{ masa.masa_kayit_tar|date:"d F, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Kayıt Kullanıcı</th>
+                                    <td>{{ masa.masa_kayit_user }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Kısa URL</th>
+                                    <td>{{ masa.masa_short_url }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+                
+                <div class="tab-pane" id="table-settings">
+                    
+                    
+                        <form action="{% url "masa_durum_degistir" masa.id masa.masa_frm_kod %}" method="POST">
+                            {% csrf_token %}
+                        {% if masa.masa_durum == True %}
+                        <div class="d-grid gap-2">
+                        <button class="btn btn-outline-danger" type="submit">Masayı Kapat</button>
+                        {% else %}
+                        <button class="btn btn-outline-success" type="submit">Masayı Aç</button>
+                        </div>
+                        {% endif %}
+                  
+                    </form>
+                     
+                   
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrModalLabel">QR Code Oluştur <i class="fa-solid fa-exclamation"></i></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Masanın mevcut bir QR kodu veya kısa URL'i varsa silinecektir. Bu işlem geri alınamaz.</p>
+                <p class="text-muted">Devam etmek istiyor musunuz?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="POST" action="{% url 'add_short_url' firma.firma_kod masa.masa_kat.id masa.masa_num %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Onayla ve Oluştur</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

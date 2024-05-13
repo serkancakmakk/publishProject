@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<li>
+  {{message}}
+</li>
+{% endfor %}
+{% endif %}
+<div id="logo" style="display: flex; justify-content: center; align-items: center;">
+  <h1 id="h1_logo">
+    QR Sipariş Sistemi <a id="admin_dashboard"
+    {% if request.user.user_frm_kod == "-1" %}
+    href="{% url "admin_dashboard" request.user.user_frm_kod %}"
+    {% endif %}
+    class="fa-solid fa-qrcode"></a>
+
+  </h1>
+</div>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
+  #h1_logo {
+    font-family: "Oswald", sans-serif;
+    color: black;
+     /* Geçiş efekti eklemek için */
+  }
+  #h1_logo a{
+    transition: transform 0.3s ease;
+  }
+  #h1_logo a:hover {
+    transform: scale(1.2);
+  }
+  .fa-qrcode{
+    text-decoration: none;
+    color:black;
+  }
+  #logo{
+    background: linear-gradient(to right, #007bff, #00bfff);
+    width: auto;
+    height: 150px;
+  }
+</style>
+
+<div class="container">
+  <div class="row">
+    <div class="container">
+      <div class="row">
+        <div class="col-6">
+          {% if request.user.user_frm_kod == "-1" and request.user.username == "orqerr" %}
+          
+          
+          <form action="{% url 'firma_ekle' %}"method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Kodu : </label>
+              <div class="input-group">
+                <input type="text"  class="form-control" id="basic-url" placeholder="Sistem Tarafından Otomatik Verilir." disabled aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Adı : </label>
+              <div class="input-group">
+                <input type="text" name="firma_adi" class="form-control" id="basic-url" placeholder="Firma Adını Giriniz." readonlys aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Adres : </label>
+              <div class="input-group">
+                <input type="text" name="firma_adres" class="form-control" id="basic-url" placeholder="Firma Adresini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Telefon : </label>
+              <div class="input-group">
+                <input type="text" name="firma_telefon" class="form-control" id="basic-url" placeholder="Firma Telefonu Giriniz." aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Telefon_2 : </label>
+              <div class="input-group">
+                <input type="text" name="firma_telefon2" class="form-control" id="basic-url" placeholder="Firma Telefonu Giriniz." aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Firma Şehir : </label>
+              <div class="input-group">
+                <input type="text" name="firma_sehir" class="form-control" id="basic-url" placeholder="Firma Şehrini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+              </div>
+            </div>
+           
+            
+            
+            
+        </div>
+        
+       <div class="col-6">
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma İlçe : </label>
+          <div class="input-group">
+            <input type="text" name="firma_ilce" class="form-control" id="basic-url" placeholder="Firma İlçesini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma Ünvan : </label>
+          <div class="input-group">
+            <input type="text" name="firma_ünvan"class="form-control" id="basic-url" placeholder="Firma Ünvanını Giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma Dış Ip : </label>
+          <div class="input-group">
+            <input type="text" name="firma_dis_ip" class="form-control" id="basic-url" placeholder="Firma Dış ip adresini giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma Durum (Aktif / Pasif) : </label>
+          <div class="input-group">
+            <input type="checkbox" name="firma_durum" class="form-check" id="basic-url" placeholder="Firma Adını Giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma Anlaşma Başlama Tarihi : </label>
+          <div class="input-group">
+            <input type="date" name="firma_bas_tar" class="form-control" id="basic-url" placeholder="Firma Anlaşma Başlama Tarihi Giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="basic-url" class="form-label">Firma Anlaşma Bitiş Tarihi : </label>
+          <div class="input-group">
+            <input type="date" name="firma_bit_tar" class="form-control" id="basic-url" placeholder="Firma Anlaşma Bitiş Tarihi Giriniz." aria-describedby="basic-addon3 basic-addon4">
+          </div>
+        </div>
+        
+       </div>
+       <style>
+        #firma_ekle_btn {
+          transition: transform 0.3s ease;
+      }
+      #firma_ekle_btn:hover {
+        transform: scale(1.1);
+    }
+       </style>
+       <div class="d-grid gap-2 col-6 mx-auto m-4">
+        <button type="submit"class="btn btn-success" id="firma_ekle_btn">Kaydet</button>
+      </div>
+    </form>
+    {% endif %}
+        <div class="col-12">
+          <form id="search-form" method="POST" action="{% url 'firma_detay_redirect'%}">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" id="search-input" class="form-control" name="firma_kod" placeholder="Firma koduyla ara">
+              <button type="submit" class="btn btn-primary">Git</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover" id="firma-table">
+        <thead>
+          <tr>
+            <th class="col" scope="col">Firma İd</th>
+            <th class="col"  scope="col">Firma Kodu</th>
+            <th class="col" scope="col">Firma Adı</th>
+            <th class="col" scope="col">Firma Adres</th>
+            <th class="col" scope="col">Firma Telefon</th>
+            <th class="col" scope="col">Firma Sehir</th>
+            <th class="col" scope="col">Firma İlçe</th>
+            <th class="col" scope="col">Firma Dış İp</th>
+            <th class="col" scope="col">Firma Ünvan</th>
+            <th class="col" scope="col">Firma Durumu</th>
+            <th class="col" scope="col">Firma Başlangıç Tarihi</th>
+            <th class="col" scope="col">Firma Bitiş Tarihi</th>
+            <th class="col" scope="col">Firmayı Oluşturan Kullanıcı</th>
+            <th class="col" scope="col">Firmanın Oluşturulduğu Tarih</th>
+            <th class="col" scope="col">Detay</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for firma in firmalar  %}
+          <tr>
+            <th scope="row">{{firma.id}}</th>
+            <td class="firma-kod">{{firma.firma_kod}}</td>
+            <td>{{firma.firma_adi}}</td>
+            <td>{{ firma.firma_adres}}</td>
+            <td>{{ firma.firma_telefon}}</td>
+            <td>{{ firma.firma_sehir}}</td>
+            <td>{{ firma.firma_ilce}}</td>
+            <td>{{firma.firma_dis_ip}}</td>
+            <td class="firma-unvan">{{firma.firma_ünvan}}</td>
+            <td>
+              {% if firma.firma_durum == True %}
+              <i class='bx bxs-check-circle true'></i>
+              {% else %}
+              <i class='bx bxs-x-circle false'></i>
+              {% endif %}
+            </td>
+            <style>
+              .false{
+                color:red;
+              }
+              .true{
+                color:green;
+              }
+              
+            </style>
+            <td>{{ firma.firma_bas_tar|date:"d/f/Y" }}</td>
+            <td>{{ firma.firma_bit_tar|date:"d/f/Y" }}</td>
+            <td>{{firma.firma_create_user}}</td>
+            <td>{{ firma.firma_create_time|date:"d/m/Y" }}</td>
+            <td><a class='bx bxs-right-arrow-circle detail' href="{% url "firma_detay" firma.firma_kod %}"></a></td>
+            <style>
+              td a{
+                text-decoration: none;
+              }
+              .detail{
+                color:green !important;
+                
+              }
+              #firma-table{
+                text-align: center;
+              }
+            </style>
+          </form>
+    
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    </div>
+    <div class="pagination">
+      <span class="step-links">
+        {% if firmalar.has_previous %}
+          <a href="?page=1">&laquo; İlk Sayfa</a>
+          <a href="?page={{ firmalar.previous_page_number }}">Önceki</a>
+        {% endif %}
+    
+        <span class="current">
+          Sayfa {{ firmalar.number }} / {{ firmalar.paginator.num_pages }}.
+        </span>
+    
+        {% if firmalar.has_next %}
+          <a href="?page={{ firmalar.next_page_number }}">Sonraki</a>
+          <a href="?page={{ firmalar.paginator.num_pages }}">Son Sayfa &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+    <script>
+      document.getElementById('search-input').addEventListener('input', function() {
+        var searchTerm = this.value.toLowerCase();
+        var rows = document.querySelectorAll('.table tbody tr'); // tbody ekledim
+        rows.forEach(function(row) {
+          var kodCell = row.querySelector('.firma-kod'); // Firma kodu hücresini seç
+          var unvanCell = row.querySelector('.firma-unvan'); // Firma ünvanı hücresini seç
+          if (kodCell && unvanCell) { // Hücreler varsa devam et
+            var kodMatch = kodCell.textContent.toLowerCase().includes(searchTerm); // Kod hücresinde arama yap
+            var unvanMatch = unvanCell.textContent.toLowerCase().includes(searchTerm); // Ünvan hücresinde arama yap
+            if (kodMatch || unvanMatch) { // Kod veya ünvan eşleşirse
+              row.style.display = ''; // Satırı görünür yap
+            } else {
+              row.style.display = 'none'; // Aksi halde satırı gizle
+            }
+          }
+        });
+      });
+    </script>
+
+  </div>
+</div>
+
+{% endblock content %}

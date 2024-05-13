@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="index.css">
+  <title>HASH TECHIE OFFICIAL</title>
+</head>
+<body>
+    <script>
+        function sendUserLocation(position) {
+            if (position.coords) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                
+                fetch('/api/get-user-location/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') // Django CSRF token'ı
+                    },
+                    body: JSON.stringify({latitude: latitude, longitude: longitude})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                });
+            } else {
+                console.log('Kullanıcı konumunu almakta bir hata oluştu.');
+            }
+        }
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.permissions.query({ name: 'geolocation' }).then(permission => {
+                    if (permission.state === 'granted') {
+                        navigator.geolocation.getCurrentPosition(sendUserLocation);
+                    } else if (permission.state === 'prompt') {
+                        // Kullanıcı izni bekleniyor
+                        console.log('Konum izni bekleniyor.');
+                    } else {
+                        // Kullanıcı izni reddedildi
+                        console.log('Konum izni reddedildi.');
+                    }
+                });
+            } else {
+                console.log('Tarayıcı konum hizmetlerini desteklemiyor.');
+            }
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Sayfa yüklendiğinde konum al
+        document.addEventListener("DOMContentLoaded", function() {
+            getUserLocation();
+        });
+    </script>
+    {% if messages %} {% for message in messages  %} <div class="d-none">
+        {{message}}
+      </div> {% endfor %} {% endif %}
+      {% if messages %}
+      {% for message in messages %}
+          <script>
+              var title = "";
+              {% if message.tags == 'success' %}
+                  title = "İşlem Başarılı";
+              {% elif message.tags == 'error' %}
+                  title = "Hata!";
+              {% endif %}
+              
+              Swal.fire({
+                  position: "top-end",
+                  icon: "{{ message.tags }}",
+                  text: "{{ message }}",
+                  title: title,
+                  showConfirmButton: false,
+                  timer: 3000
+              });
+          </script>
+      {% endfor %}
+    {% endif %}
+    <section>
+        
+        <div class="form-box">
+            
+            <div class="form-value">
+                
+                <form method="POST" action="{% url "user_login" %}">
+                    {% csrf_token %}
+                    <h2>Giriş Yap </h2>
+                    [{{remote_addr}} {{external_ip}}]
+                    <div class="inputbox">
+                        
+                        <ion-icon name="business-outline"></ion-icon>
+                        <input valid type="text" id="firma_kod_input" name="firma_kod_manuel" value="{{firma.firma_kod}}" required disabled />
+
+                        <input type="hidden" name="firma_kod" value="{{firma.firma_kod}}">
+                        
+                    </div>
+                    <div class="inputbox">
+                        
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" name="username" required>
+                        <label for="">Kullanıcı Adı</label>
+                    </div>
+                    <div class="inputbox">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" name="password" required>
+                        <label for="">Şifre</label>
+                    </div>
+                    <div class="forget">
+                        <label for="firma_kod_gir">
+                            <input type="checkbox" value="on" name="manuel_firma_kod" id="firma_kod_gir" onchange="toggleFirmaKod()" />
+                            Firma Kodunu Manuel Gir
+                          </label>
+                          <script>
+                            function toggleFirmaKod() {
+                              var firmaKodInput = document.querySelector('input[name="firma_kod_manuel"]');
+                              var checkbox = document.querySelector('input[type="checkbox"]');
+                              if (checkbox.checked) {
+                                firmaKodInput.disabled = false;
+                                firmaKodInput.value = ''
+                              } else {
+                                firmaKodInput.disabled = true;
+                                ; // Metin alanını temizleme
+                              }
+                            }
+                          </script>
+                          
+                        <label for=""><input type="checkbox">Beni Hatırla</label>
+                      
+                    </div>
+                    <button type="submit">Giriş Yap</button>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
+<style>
+    .toast {
+        width: 450px !important;
+        margin: auto;
+        margin-top: 2rem;  
+      } 
+      
+      .toast-content {
+        padding: 15px;
+      }
+      
+      .icon i {
+        font-size: 35px;  
+      }
+      
+      
+      .toast.success {
+        border: 2px solid #14A44D !important;
+        color: #14A44D;
+      }
+      
+      .toast.warning {
+        border: 2px solid #F9A02C !important;
+        color: #F9A02C;
+      }
+      
+      .toast.erro {
+        border: 2px solid #D90429 !important;
+        color: #D90429;
+      }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+    *{
+        margin: 0;
+        padding: 0;
+        font-family: 'poppins',sans-serif;
+    }
+    section{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        
+        background: url('https://i.pinimg.com/originals/31/ca/2b/31ca2bcf105003bf97be1aaf9e564df6.jpg')no-repeat;
+        background-position: center;
+        background-size: cover;
+    }
+    .form-box{
+        position: relative;
+        width: 400px;
+        height: 450px;
+        background: transparent;
+        border: 2px solid rgba(255,255,255,0.5);
+        border-radius: 20px;
+        backdrop-filter: blur(15px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    
+    }
+    h2{
+        font-size: 2em;
+        color: #fff;
+        text-align: center;
+    }
+    .inputbox{
+        position: relative;
+        margin: 30px 0;
+        width: 310px;
+        border-bottom: 2px solid #fff;
+    }
+    input1:valid ~ label{
+    top: -5px;
+    }
+    .inputbox label{
+        position: absolute;
+        top: 50%;
+        left: 5px;
+        transform: translateY(-50%);
+        color: #fff;
+        font-size: 1em;
+        pointer-events: none;
+        transition: .5s;
+    }
+    input:focus ~ label,
+    input:valid ~ label{
+    top: -5px;
+    }
+    .inputbox input {
+        width: 100%;
+        height: 50px;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 1em;
+        padding:0 35px 0 5px;
+        color: #fff;
+    }
+    .inputbox ion-icon{
+        position: absolute;
+        right: 8px;
+        color: #fff;
+        font-size: 1.2em;
+        top: 20px;
+    }
+    .forget{
+        margin: -15px 0 15px ;
+        font-size: .9em;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;  
+    }
+    
+    .forget label input{
+        margin-right: 3px;
+        
+    }
+    .forget label a{
+        color: #fff;
+        text-decoration: none;
+    }
+    .forget label a:hover{
+        text-decoration: underline;
+    }
+    button{
+        width: 100%;
+        height: 40px;
+        border-radius: 40px;
+        background: #fff;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+    }
+    .register{
+        font-size: .9em;
+        color: #fff;
+        text-align: center;
+        margin: 25px 0 10px;
+    }
+    .register p a{
+        text-decoration: none;
+        color: #fff;
+        font-weight: 600;
+    }
+    .register p a:hover{
+        text-decoration: underline;
+    }
+</style>
+
+{% endblock content %}

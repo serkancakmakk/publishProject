@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{firma.firma_adi}}| Sipariş Ekranı</title>
+    {% block icon %}
+    <link rel="icon" type="image/x-icon" href="{% static '/project-image/order_food_delivery_burger_icon_221032.ico' %}">
+    {% endblock icon %}
+
+    <input type="hidden" id="firma-kod" value="{{ firma.firma_kod }}">
+    <script src="{% static 'js/siparis_ver.js' %}"></script>
+    
+</head>
+{% if messages %}
+{% for message in messages %}
+<li>
+    {{message}}
+</li>
+{% endfor %}
+{% endif %}
+    <div class="d-flex flex-wrap bd-highlight mb-3 category-wrap-background">
+
+        {% for kategori in kategoriler %}
+        
+        <a class="category-button" data-id="{{kategori.id}}" data-category="{{ kategori.kategori_ad }}" onclick="showProductsByCategory('{{ kategori.id }}')">
+               <div class="category-image">
+                   <img name = "{{kategori.id}}"id="categoryImage"src="{% if kategori.kategori_image %}{{ kategori.kategori_image.url }}{% else %}https://placekitten.com/80/80{% endif %}" alt="Category Image">
+               </div>
+               <p class="text-center">{{ kategori.kategori_ad }}</p>
+           </a>
+       {% endfor %}
+       </div>
+<div class="orderBody">
+    <form method="post" id="orderForm">
+        {% csrf_token %}
+        <div class="container">
+            {% for kategori, urunler in kategorili_ürünler.items %}
+                <div id="kategori_{{ kategori.id }}" class="kategori-urunler" style="display: none;">
+                    {% for urun in urunler %}
+                    <div class="card">
+                        
+                        <img src="{{urun.urun_img.url}}" alt="">
+                        <hr>
+                        <h3 class="mt-3">{{ urun.urun_ad }}</h3>
+                        <p>Fiyat: {{ urun.fiyat }}</p>
+                        <div class="quantity">
+                            <div class="button-container">
+                                <a class="azaltBtn" onclick="decreaseQuantity('{{ urun.id }}', '{{ urun.urun_fiyat }}'); return false;"><i class="fa-solid fa-minus"></i></a>
+        
+                                <span id="quantity_{{ urun.id }}" class="quantity">0</span>
+                                <a href="#" class="arttirBtn" onclick="increaseQuantity('{{ urun.id }}'); return false;"><i class="fa-solid fa-plus"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        
+    </form>
+    <button class="btn btn-success" id="orderOk" onclick="showModal()">Siparişi Tamamla</button>
+
+    <style>
+        #orderOk {
+            position: fixed; /* Sabit konuma taşı */
+            top: 10px; /* Sayfanın en üstünden 10 piksel aşağıda */
+            right: 10px; /* Sağ kenara 10 piksel mesafede */
+            z-index: 9999; /* Diğer öğelerin üzerine çıkacak şekilde yüksek bir z-index değeri ver */
+        }
+    </style>
+    <script>
+        function showProductsByCategory(categoryId) {
+            // Tüm kategori div'lerini gizle
+            var allCategoryDivs = document.querySelectorAll('.kategori-urunler');
+            allCategoryDivs.forEach(function(div) {
+                div.style.display = 'none';
+            });
+    
+            // Tüm kategori düğmelerinden "active" classını kaldırın
+            var allCategoryButtons = document.querySelectorAll('.category-button');
+            allCategoryButtons.forEach(function(button) {
+                button.classList.remove('active');
+            });
+            
+            // Tıklanan kategoriye ait div'i görünür yap
+            var categoryDiv = document.getElementById('kategori_' + categoryId);
+            if (categoryDiv) {
+                categoryDiv.style.display = 'block';
+            }
+            
+            // Tıklanan kategoriye ait düğmeye "active" classını ekle
+            var clickedCategoryButton = document.querySelector("[data-id='" + categoryId + "']");
+            if (clickedCategoryButton) {
+                clickedCategoryButton.classList.add('active');
+            }
+        }
+    </script>
+   
+{% comment %} 
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" >&times;</span>
+            <h2>Sipariş Detayları</h2>
+            <ul id="orderList">
+                <!-- Seçilen ürünlerin ve miktarlarının listeleneceği yer -->
+            </ul>
+            
+        </div>
+    </div>
+</div> {% endcomment %}
+<div id="myModal"  class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Siparişi Onayla</h5>
+          <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <ul id="orderList">
+                <!-- Seçilen ürünlerin ve miktarlarının listeleneceği yer -->
+            </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" onclick="closeModal()">Vazgeç</button>
+          <button type="button"id ="confirmOrder" class="btn btn-primary"onclick="confirmOrder()" >Siparişi Onayla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>
+<style>
+    .azaltBtn{
+        background-color: red;
+    }
+    .arttirBtn{
+        background-color: green;
+    }
+    li[id^="order_"] {
+        border: 1px solid #ccc; /* Gri renkte 1 piksel kalınlığında bir çizgi */
+        padding: 10px; /* İçeriğin etiket sınırlarından uzaklaşmasını sağlar */
+        margin-bottom: 10px; /* Her bir sipariş öğesinin altında boşluk bırakır */
+    }
+    .quantity-display{
+        font-weight: bold;
+    }
+    .btn-group button{
+        /*border-radius: 50%;*/
+        width: 10px !important;
+        text-align: center;
+        margin-right: 10px;
+        
+    }
+    .btn-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    #orderList li {
+        list-style-type: none;
+    }
+    .product-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .product-name {
+        display: inline; /* p elementini inline olarak ayarlar */
+        margin-right: 10px; /* İsteğe bağlı: Ürün adı ile miktar arasında bir boşluk bırakır */
+    }
+    #increaseButton{
+        background-color: #45a049;
+    }
+    #categoryImage{
+        width:100px;
+        height:100px;
+    }
+    .category-image {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 8px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        margin: 10px;
+    } 
+
+
+    .card img {
+        width: 100%;
+        height: auto;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+    .fa-minus{
+        color:white;
+    }
+    .arttir .azalt{
+        font-weight: bold;
+        text-align: center;
+    }
+</style>
+            
+
+        
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+                .category-button{
+                    text-decoration: none;
+                    font-weight: 700;
+                    color: black;
+                    font-family: "Poppins", sans-serif;
+                    font-weight: 600;
+                    font-style: normal;
+
+                }
+                .category-wrap-background{
+                    background-color: orange;
+                }
+                .category-button {
+                    font-size: 18px; /* Metin boyutunu ayarlayın */
+                    padding: 10px 20px; /* Buton genişliğini ayarlayın */
+                    margin: 10px;
+                    cursor:pointer;
+                }
+                .category-button:hover{
+                    transform: scale(1.2);
+                    transition: 1s;
+                    box-shadow: 10px;
+                }
+            </style>
+            <style>
+                .category-button.active p {
+                color: white ;/* .active durumunda renk değiştir */
+                
+                transition: 1.5s ease;
+            }
+        
+            .active {
+                transform: scale(1.2);
+                color: blue;
+            }
+        </style>
+        <style>
+            body{
+                text-align: center;
+                /*background-color: #97E7E1;*/
+            }
+            .card {
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 10px;
+                margin: 10px;
+                width: 250px;
+                display: inline-block;
+                justify-items: center;
+                text-align: center;
+            }
+            .quantity {
+                margin-top: 10px;
+            }
+            .modal {
+                display: none; 
+                position: fixed; 
+                z-index: 1; 
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%; 
+                overflow: auto; 
+                background-color: rgb(0,0,0); 
+                background-color: rgba(0,0,0,0.4); 
+                padding-top: 60px;
+            }
+            .modal-content {
+                background-color: #fefefe;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+            }
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            img{
+                height: 128px;
+                width: 128px;
+                justify-content: center;
+            }
+            /* Butonlar */
+    .button-container {
+        display: flex;
+       justify-content: center;
+        width:185px;
+    }
+    
+    .button-container button,
+    .button-container a {
+        /*background-color: #4CAF50; /* Yeşil */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    
+    .button-container button:hover,
+    .button-container a:hover {
+        background-color: #45a049; /* Koyu yeşil */
+    }
+    
+    .quantity {
+        padding: 10px;
+        font-size: 18px;
+        margin: 0 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+        </style>
+    </div>
+    <footer class="footer">
+        <div class="container">
+          <div class="footer-content">
+            <div class="footer-logo">
+              Logo
+            </div>
+            <div class="footer-links">
+              <ul class="footer-menu">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+            <div class="footer-social">
+              <ul class="social-icons">
+                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                <li><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2023 Your Company. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+      <style>
+        .footer {
+            margin-top: auto;
+            position: fixed;
+            font-size: 18px;
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 30px 0;
+            height: 100px;
+            border-radius: 10px;
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: 25% 50% 25%;
+        }
+        
+          
+        .footer-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+          
+        .footer-menu li {
+            display: inline-block;
+            margin-right: 20px;
+        }
+          
+        .footer-menu li:last-child {
+            margin-right: 0;
+        }
+          
+        .footer-menu a {
+            color: #fff;
+            text-decoration: none;
+        }
+          
+        .social-icons {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+          
+        .social-icons li {
+            display: inline-block;
+            margin-right: 10px;
+        }
+          
+        .social-icons li:last-child {
+            margin-right: 0;
+        }
+          
+        .social-icons a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 20px;
+        }
+          
+        .footer-bottom {
+            margin-top: 20px;
+            text-align: center;
+        }
+          
+        .footer-bottom p {
+            margin: 0;
+        }
+          
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: repeat(1, 1fr);
+                row-gap: 20px;
+            }
+            .footer-menu{
+                text-align: left;
+            }
+            .footer-menu li {
+              display: block;
+              margin-bottom: 10px;
+            }
+        }
+          
+        .attribute{
+            position: absolute;
+            bottom: 10px;
+        }
+      </style>
+{% endblock content %}

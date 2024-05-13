@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Aktarımı</title>
+</head>
+<body>
+    <h1>Excel Aktarımı</h1>
+    
+    {% if success %}
+    <p style="color: green;">Excel dosyası başarıyla aktarıldı!</p>
+    {% endif %}
+    {% if messages %}
+    {% for message in messages  %}
+    {{message}}{% endfor %}
+    {% endif %}
+    {% if error %}
+    <p style="color: red;">Hata: {{ error }}</p>
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="excel_file" accept=".xlsx,.xls,.csv">
+        <button type="submit">Excel Dosyasını Aktar</button>
+    </form>
+</body>
+</html>

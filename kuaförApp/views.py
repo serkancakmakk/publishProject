@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 import openpyxl
 
-from .forms import FirmaEkle, KatEkle, KategoriEkle, MasaEkle, UrunEkle, UserEkle, UserUpdateForm, FirmaDüzenle, KatGüncelle, MasaDüzenle
+from .forms import FirmaEkle, KatEkle, KategoriEkle, MasaEkle, UpdateRequestForm, UrunEkle, UserEkle, UserUpdateForm, FirmaDüzenle, KatGüncelle, MasaDüzenle
 
-from .models import Firma, FirmaUser, Kat, Kategori, Log, Masa, ShortUrl, SiparisUrun, Urun, Yetki
+from .models import Firma, FirmaUser, Kat, Kategori, Masa, ShortUrl, SiparisUrun, UpdateRequest, Urun, Yetki
 import random,string
 from django.contrib import messages
 # Firma oluşturma ve listeleme ekranı
@@ -210,17 +210,17 @@ def user_giris(request):
     print(remote_addr)
     real_ip = request.META.get('HTTP_X_REAL_IP')
     print('Real ip',real_ip)
-    log = Log.objects.create(
-        ip_adresi = real_ip
-    )
-    log.save()
+    # log = Log.objects.create(
+    #     ip_adresi = real_ip
+    # )
+    # log.save()
     # Firmanın dış IP adresi ile eşleşen firmayı bul
     firma = Firma.objects.filter(firma_dis_ip=real_ip).first()
     
-    if not firma:
-        # Eğer firma bulunamazsa, bir hata mesajı göster
-        messages.error(request, "Firma bulunamadıq.")
-        return render(request, 'user_giris.html', {'firma': None})
+    # if not firma:
+    #     # Eğer firma bulunamazsa, bir hata mesajı göster
+    #     messages.error(request, "Firma bulunamadıq.")
+    #     return render(request, 'user_giris.html', {'firma': None})
     
     context = {
         'external_ip': external_ip,
@@ -248,51 +248,71 @@ def check_company_agreement():
             company.save()
     
 def user_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+    # POST isteği kontrolü
+    if request.method != 'POST':
+        messages.error(request, 'Bu istekler kabul edilmez.')  # İsteği mesaj olarak göster
+        return redirect('user_giris')
+
+    # Kullanıcı adı ve şifreyi alma
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+
+    # 'orqerr' kullanıcısı için giriş kontrolü
+    if username == 'orqerr' and password == 'SEYASA':
+        # 'orqerr' kullanıcısı için FirmaUser modelinden kullanıcıyı al
+        user = FirmaUser.objects.filter(username=username, user_frm_kod="-1").first()
+        check_company_agreement()  # Şirket anlaşmasını kontrol et (Bu fonksiyonun tanımı yer almadığı için işlevsiz)
+        login(request, user)  # Kullanıcıyı oturum açmış olarak işaretle
+
+        # Yetki nesnesini oluştur veya al
+        yetki, created = Yetki.objects.get_or_create(user=user)
+
+        # Tüm yetkileri True olarak ayarla
+        for field in Yetki._meta.fields:
+            if field.name != 'user':  # Kullanıcı alanını atla
+                setattr(yetki, field.name, True)
+
+        # Değişiklikleri kaydet
+        yetki.save()
+
+        # Admin panosuna yönlendir
+        return redirect('admin_dashboard', firma_kod='-1')
+    else:
+        # Manuel firma kodu kontrolü
         manuel_kod_gir = request.POST.get('manuel_firma_kod')
         firma_kod = request.POST.get('firma_kod')
+        print(firma_kod)
         if manuel_kod_gir == 'on':
-            firma_kod = request.POST.get('firma_kod_manuel')
+            # Manuel firma kodu girildiyse
+            print('Manuel Kod Gir Alanı', manuel_kod_gir)
             print('manuel firma kodu alınacak')
-        
-        # Admin kullanıcısı için doğrulama
-        if username == 'orqerr' and password == 'SEYASA':
-            user = FirmaUser.objects.filter(username=username, user_frm_kod="-1").first()
-            if user is not None:
-                check_company_agreement()
+            # Manuel firma kodunu al
+            firma_kod = request.POST.get('firma_kod_manuel')
+            print('Manuel Firma Kodu', firma_kod)
+            try:
+                firma = Firma.objects.get(firma_kod=firma_kod)
+            except Firma.DoesNotExist:
+                messages.error(request, 'Hatalı Firma Kodu Girildi')
+                return redirect('user_giris')
+            # Kullanıcıyı firma koduna göre filtrele
+            user = FirmaUser.objects.filter(username=username, user_frm_kod=firma_kod).first()
+            print('USER BULUNDU', user)
+            if not user != None:
+                messages.error(request, 'Kullanıcı Bulunamadı')
+                return redirect('user_giris')
+                # Kullanıcı etiketini kontrol et
+            if user.user_tag == 'Destek':
+                    # Destek kullanıcısıysa oturum aç
                 login(request, user)
-                
-                # Kullanıcının Yetki modelini oluştur veya var olanı al
-                yetki, created = Yetki.objects.get_or_create(user=user)
-
-                # Tüm yetki alanlarını döngü içinde True olarak ayarla
-                for field in Yetki._meta.fields:
-                    if field.name != 'user':  # Kullanıcı alanını atla
-                        setattr(yetki, field.name, True)
-
-                # Değişiklikleri kaydet
-                yetki.save()
-                
                 return redirect('admin_dashboard', firma_kod=firma_kod)
-            messages.error(request, 'Kullanıcı Adı veya Şifre Hatalı Kontrol Ediniz.')
-        
-        # Diğer kullanıcılar için doğrulama
-        else:
-            user = FirmaUser.objects.filter(username=username).first()
-            if user is not None:
-                # Kullanıcının user_tag değerini kontrol et
-                if user.user_tag == 'Destek':
-                    login(request, user)
-                    return redirect('admin_dashboard', firma_kod=firma_kod)
-                if user.user_frm_kod == firma_kod:
-                    login(request, user)
-                    return redirect('admin_dashboard', firma_kod=firma_kod)
-                messages.error(request, 'Geçersiz firma kodu.')
-            messages.error(request, 'Kullanıcı Adı veya Şifre Hatalı Kontrol Ediniz.')
-
-    return redirect('user_giris')
+            # Kullanıcıyı oturum açmış olarak işaretle
+            if not user.user_durum == True:
+                print('user durumu bulundu',user.user_durum)
+                messages.info(request,'Kullanıcı Durumu Pasif Giriş Yapılmadı.')
+                return redirect('user_giris')
+                
+            login(request, user)
+            return redirect('admin_dashboard', firma_kod=user.user_frm_kod)
 from django.contrib.auth import logout
 def user_logout(request):
     logout(request)
@@ -406,7 +426,11 @@ def kat_ekle(request, firma_kod):
         pass
 # Kat düzenle
 
-def kat_düzenle(request, firma_kod, kat_id):
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Firma, Kat, Yetki
+
+def kat_düzenle(request, firma_kod):
     user_id = request.user.id
 
     # Master kullanıcı kontrolü
@@ -428,27 +452,37 @@ def kat_düzenle(request, firma_kod, kat_id):
             return redirect('admin_dashboard', firma_kod=request.user.user_frm_kod)
 
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
-    kat = get_object_or_404(Kat, id=kat_id)
-    yeni_kat_ad = request.POST.get('kat_ad')
-    kat_durum = request.POST.get('kat_durum')
+    
+    if request.method == 'POST':
+        kat_id = request.POST.get('katID')
+        kat = get_object_or_404(Kat, id=kat_id)
+        yeni_kat_ad = request.POST.get('kat_ad')
+        kat_durum = request.POST.get('kat_durum')
+        print('Kat durum bulundu',kat_durum)
 
-    # Eğer yeni kat adı boşsa veya mevcut bir kategorinin adıyla aynıysa hata döndür
-    if Kat.objects.filter(kat_frm_kod=firma.firma_kod, kat_ad=yeni_kat_ad).exists():
-        messages.error(request, 'Bu isimde bir kat zaten mevcut.')
-        return redirect('admin_dashboard', firma_kod=request.user.user_frm_kod)
-    if not yeni_kat_ad:
-        yeni_kat_ad = kat.kat_ad
-    kat.kat_ad = yeni_kat_ad
+        # Eğer yeni kat adı boşsa veya mevcut bir kategorinin adıyla aynıysa hata döndür
+        if not kat.kat_ad == yeni_kat_ad:
+            if Kat.objects.filter(kat_frm_kod=firma.firma_kod, kat_ad=yeni_kat_ad).exists():
+                messages.error(request, 'Bu isimde bir kat zaten mevcut.')
+                return redirect('admin_dashboard', firma_kod=request.user.user_frm_kod)
+        if not yeni_kat_ad:
+            yeni_kat_ad = kat.kat_ad
+        kat.kat_ad = yeni_kat_ad
 
-    if kat_durum == 'on':
-        kat.kat_durum = True
+        if kat_durum == 'on':
+            kat.kat_durum = True
+        else:
+            kat.kat_durum = False
+
+        kat.kat_kayit_user = request.user.username
+        kat.save()
+        messages.success(request, 'Güncelleme Başarılı')
+        return redirect('admin_dashboard', firma_kod=firma_kod)
     else:
-        kat.kat_durum = False
+        # Eğer istek POST değilse, hata döndür
+        messages.error(request, 'Geçersiz istek türü')
+        return redirect('admin_dashboard', firma_kod=firma_kod)
 
-    kat.kat_kayit_user = request.user.username
-    kat.save()
-    messages.success(request, 'Güncelleme Başarılı')
-    return redirect('admin_dashboard', firma_kod=firma_kod)
 
         
 
@@ -468,9 +502,16 @@ def masa_ekle(request, firma_kod):
             kat_id = request.POST.get('masa_kat')
             if form.is_valid():
                 kat = get_object_or_404(Kat, id=kat_id)
+                # if kat.kat_durum == False: # masa eklerken kapalı konuma denk gelirse
+                #     messages.error(request,'Kapalı durumdaki konuma masa eklenemez')
+                #     return redirect('admin_dashboard', firma_kod=firma_kod)
+
                 masa = form.save(commit=False)
                 if Masa.objects.filter(masa_frm_kod=firma_kod, masa_kat=kat, masa_num=masa.masa_num).exists():
                     messages.error(request, 'Bu isimde bir masa zaten mevcut.')
+                    return redirect('admin_dashboard', firma_kod=firma_kod)
+                if not masa.masa_kat.kat_durum == True:
+                    messages.error(request, 'Pasif olan konuma masa ekleyemezsiniz.')
                     return redirect('admin_dashboard', firma_kod=firma_kod)
                 masa.masa_kat = kat
                 masa_firma = get_object_or_404(Firma, firma_kod=firma_kod)
@@ -559,13 +600,10 @@ def masa_düzenle(request, firma_kod):
 def urun_ekle(request, firma_kod):
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
     yetki = get_object_or_404(Yetki, user=request.user)
-    if not (
-    (request.user.username == 'orqerr' and request.user.user_frm_kod == "-1") or 
-    (request.user.user_frm_kod == "-1" and yetki.ürün_ekle) or 
-    (yetki.ürün_ekle and request.user.user_frm_kod == firma.firma_kod)
-    ):
-        print(request.user.username)
-        print(request.user.user_frm_kod)
+    
+    if not ((request.user.username == 'orqerr' and request.user.user_frm_kod == "-1") or 
+            (request.user.user_frm_kod == "-1" and yetki.ürün_ekle) or 
+            (yetki.ürün_ekle and request.user.user_frm_kod == firma.firma_kod)):
         messages.error(request, 'İşlem yapılan firma size ait değil.')
         return redirect('admin_dashboard', firma_kod=firma_kod)
     
@@ -577,18 +615,20 @@ def urun_ekle(request, firma_kod):
             urun.urun_frm = firma
             urun.urun_kayit_user = request.user.username
             
+            # Kategori durumu kontrolü
+            if not urun.urun_kategori.kategori_durum == True:
+                messages.error(request, 'Pasif olan kategoriye ürün ekleyemezsiniz.')
+                return redirect('admin_dashboard', firma_kod=firma_kod)
+            
             # Aynı kategori ve isimde bir ürün varsa eklenmemesi için kontrol edin
             if Urun.objects.filter(urun_ad=urun.urun_ad, urun_kategori=urun.urun_kategori).exists():
                 messages.error(request, 'Aynı kategoride aynı isimde bir ürün zaten mevcut.')
             else:
                 urun.save()
-                messages.add_message(request, messages.SUCCESS, "Ürün Başarıyla Kaydedildi")
+                messages.success(request, "Ürün Başarıyla Kaydedildi")
                 return redirect('admin_dashboard', firma_kod=firma_kod)
         else:
-            print(form.errors)
-            messages.add_message(request, messages.ERROR, "Formda bazı hatalar var hataları düzeltin.")
-            
-
+            messages.error(request, "Formda bazı hatalar var hataları düzeltin.")
     return redirect('admin_dashboard', firma_kod=firma_kod)
 def urun_guncelle(request, firma_kod):
     # Firma nesnesini al
@@ -653,6 +693,13 @@ def kategori_ekle(request, firma_kod):
                 kategori.kategori_frm_kod = firma.firma_kod
                 kategori.kategori_frm = firma
                 kategori.kategori_kayit_user = request.user.username
+                kategori_durum = request.POST.get('kategori_durum')
+                print('Kategori_durum bulundu',kategori_durum)
+                if kategori_durum == 'on':
+                    
+                    kategori.kategori_durum = True
+                else:
+                    kategori.kategori_durum = False
                 
                 # Aynı kategori koduna sahip bir kategori varsa hata mesajı gönder
                 if Kategori.objects.filter(kategori_kod=kategori.kategori_kod, kategori_frm_kod=firma_kod).exists():
@@ -1008,7 +1055,7 @@ from asgiref.sync import async_to_sync
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from kuaförApp.apscheduler import schedule_task
+from kuaförApp.apscheduler import delete_expired_update_requests, delete_expired_update_requests_task, schedule_task
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 def siparis_durumu_hazir(request,
@@ -1252,7 +1299,8 @@ from datetime import timedelta
 from datetime import datetime
 def siparis_ekranina_git(request,firma_kod):
     try:
-        short_url_obj = get_object_or_404(ShortUrl, url_frm_kod=firma_kod)
+        short_url_obj = ShortUrl.objects.filter(url_frm_kod=firma_kod).first()
+
     except ShortUrl.DoesNotExist:
     # Handle the case where ShortUrl does not exist for the provided firma_kod
     # For example, redirect the user to an error page or display a meaningful message
@@ -1354,12 +1402,22 @@ def admin_dashboard(request, firma_kod):
 
     # Retrieve tables, categories, and other related data
     masalar = Masa.objects.filter(masa_frm_kod=firma_kod)
-    kategoriler = Kategori.objects.filter(kategori_frm=firma)
+    kategoriler = Kategori.objects.filter(kategori_frm=firma,kategori_frm_kod = firma.firma_kod)
+    print('Firma bulundu',firma.firma_kod)
+    print('kategoriler bulundu',kategoriler)
+
     katlar = Kat.objects.filter(kat_frm_kod=firma_kod).order_by('id')
 
     # Retrieve firm users
     firma_kullanicilari = FirmaUser.objects.filter(user_frm_kod=firma_kod)
-
+    try:
+        # Belirtilen req_company_code değerine sahip bir UpdateRequest nesnesini alın
+        update_request_instance = UpdateRequest.objects.get(req_company_code=request.user.user_frm_kod)
+        # UpdateRequest nesnesini kullanarak form oluşturun
+        company_update_form = UpdateRequestForm(instance=update_request_instance)
+    except UpdateRequest.DoesNotExist:
+        # Eğer belirtilen req_company_code değerine sahip bir UpdateRequest nesnesi bulunamazsa, boş bir form oluşturun
+        company_update_form = UpdateRequestForm()
     # Remove existing view_all parameter if present
     parsed_url = urlparse(request.get_full_path())
     query_params = parse_qs(parsed_url.query)
@@ -1370,6 +1428,7 @@ def admin_dashboard(request, firma_kod):
     kalan_gun = (datetime.combine(firma.firma_bit_tar, datetime.min.time()) - datetime.now()).days if firma.firma_bit_tar else None
 
     context = {
+        'company_update_form':company_update_form,
         'firmalar': firmalar,
         'masaDüzenle': MasaDüzenle(),
         'kalan_gun': kalan_gun,
@@ -1463,6 +1522,7 @@ def yetki_ver(request, firma_kod, uuid4):
         kategori_ekle = request.POST.get('kategori_ekle')
         kullanici_kayit = request.POST.get('kullanici_kayit')
         kullanici_yetkilendir = request.POST.get('kullanici_yetkilendir')
+        kullanici_güncelle = request.POST.get('kullanici_güncelle')
         firma_sil = request.POST.get('firma_sil')
 
 
@@ -1483,6 +1543,7 @@ def yetki_ver(request, firma_kod, uuid4):
         yetki.masa_ekle = True if masa_ekle == 'on' else False
         yetki.kategori_ekle = True if kategori_ekle == 'on' else False
         yetki.kullanici_kayit = True if kullanici_kayit == 'on' else False
+        yetki.kullanici_güncelle = True if kullanici_güncelle == 'on' else False
         # pasife alma
         yetki.firma_sil = True if firma_sil == 'on' else False
         yetki.kullanici_yetkilendir = True if kullanici_yetkilendir == 'on' else False
@@ -1490,7 +1551,7 @@ def yetki_ver(request, firma_kod, uuid4):
         yetki.save()
 
         # Başarılı işlem sonrası ana sayfaya yönlendirme
-        messages.error(request, "Yetki Güncellemesi Yapıldı")
+        messages.success(request, "Yetki Güncellemesi Yapıldı")
         return redirect(request.META.get('HTTP_REFERER'))
 
     # Eğer POST isteği değilse veya başarısız bir işlem varsa ana sayfaya yönlendir
@@ -1596,3 +1657,70 @@ def give_all_permissions(request):
 
         # İşlem başarılı olduysa bir JSON yanıtı gönder
         return JsonResponse({'message': 'Tüm yetkiler başarıyla verildi.'})
+def request_an_update(request,firma_kod):
+    user = request.user
+    try:
+        firma = get_object_or_404(Firma,firma_kod=firma_kod) # firmayı bul
+    except:
+        messages.error(request,'Güncelleme Talep Ettiğiniz Firma Bulunamadı.') #firma kayıtlı değilse
+        return redirect('admin_dashboard',request.user.user_frm_kod)
+    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
+            (user.user_frm_kod == firma.firma_kod)): # admin değilse ve firma kodları uyuşmuyorsa
+            messages.success(request,'Güncelleme Talep Ettiğiniz Firma Size Ait Görünmüyor.')
+            return redirect('admin_dashboard',request.user.user_frm_kod)
+    if not request.method == 'POST':
+        messages.info(request,'Bu istekler kabul edilmez') # istek post değilse
+        return redirect('admin_dashboard',request.user.user_frm_kod)
+    existing_request = UpdateRequest.objects.filter(req_company_code=request.user.user_frm_kod).first()
+    form = UpdateRequestForm(request.POST, instance=existing_request)  # Mevcut talebi instance olarak belirtin
+    if form.is_valid():
+        
+        # form geçerliyse
+        update_request = form.save(commit=False)
+        update_request.req_company_code = request.user.user_frm_kod
+        update_request.req_user = request.user.user_adi +' '+ request.user.user_soyad
+        update_request.save()
+        
+        # güncelleme isteği kaydedildiyse
+        messages.success(request,'Güncelleme Talebiniz Alındı.')
+        return redirect('admin_dashboard',request.user.user_frm_kod)
+def company_update_requests(request):
+    user = request.user
+    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
+            (user.user_frm_kod == '-1' and user.yetkiler.guncelleme_talepleri)):
+        messages.error(request, "Bu sayfaya erişim izniniz yok !")
+        return redirect(request.META.get('HTTP_REFERER'))
+    requests = UpdateRequest.objects.filter(is_active=True)
+    completed_requests = UpdateRequest.objects.filter(is_active=False)
+    context = {
+        'completed_requests':completed_requests,
+        'requests':requests,
+    }
+    return render(request,'admin_alani/update_requests.html',context)
+from .models import UpdateRequest
+def close_update_request(request,firma_kod):
+    user = request.user
+    try:
+        update_request = get_object_or_404(UpdateRequest,req_company_code = firma_kod)
+
+    except:
+        messages.info(request, "Güncelleme Talebi Bulunamadı")
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not request.method == 'POST':
+        messages.info(request, "Bu istekler kabul edilmez")
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
+            (user.user_frm_kod == '-1' and user.yetkiler_guncelleme_talepleri)): # admin değilse veya güncelleme talep yetkisi yoksa
+            messages.success(request,'Bu işleme yetkiniz bulunmuyor.')
+            return redirect('admin_dashboard',request.user.user_frm_kod)
+    update_request.is_active = False
+    # delete_expired_update_requests_task()       
+    update_request.save()
+    messages.success(request,'Güncelleme Talebi İşleme Alındı')
+    return redirect(request.META.get('HTTP_REFERER'))
+def undo_update_request(request,firma_kod):
+    if request.method == 'POST':
+        update_request = get_object_or_404(UpdateRequest,req_company_code=firma_kod)
+        update_request.is_active =True
+        update_request.save()
+        return redirect(request.META.get('HTTP_REFERER'))

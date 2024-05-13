@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    {% comment %}
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    {% endcomment %}
+    
+</head>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert-message">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+{% if messages %}
+{% for message in messages %}
+<script>
+    // Bu kısmı uygulamanıza uygun şekilde düzenleyin
+    // SweetAlert2 kullanımı örnek olarak verilmiştir
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: "{{ message }}",
+            showConfirmButton: false,
+            timer: 5000
+        });
+    });
+</script>
+{% endfor %}
+{% endif %}
+
+<p id="firmaKodu" style="display: none;">{{ firma.firma_kod }}</p>
+<div class="row">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+        /* Style for order cards */
+        .order-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+    
+        /* Flex container for two cards per row */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+    
+        /* Center align text */
+        .text-center {
+            text-align: center;
+        }
+       
+        #orderStatus {
+            font-family: "Exo 2", sans-serif;
+            font-weight: bold;
+            
+            /* Diğer stillendirme özellikleri buraya eklenebilir */
+        }
+    </style>
+    <style>
+        .receipt-num {
+            border: 1px solid #ced4da; 
+            border-radius: 0.25rem;
+             padding: 10px;
+        }
+        #bekleyen_siparisler{
+            border: 5px solid blue; 
+            border-radius: 0.25rem;
+             padding: 10px;
+        }
+        #hazirlanan_siparisler{
+            border: 5px solid green; 
+            border-radius: 0.25rem;
+            padding: 10px;
+            margin-left:10px;
+        }
+        #iptal_siparisler{
+            border: 5px solid red; 
+            border-radius: 0.25rem;
+            padding: 10px;
+            margin-left:10px;
+        }
+    </style>
+    <style>
+        .btn-block{
+            width:100%;
+            margin:2px;
+        }
+    </style>
+    <div class="col" id="bekleyen_siparisler">
+        <h1 class="text-center mb-4" id="orderStatus">BEKLEYEN SİPARİŞLER</h1>
+        <div class="flex-container">
+            {% for siparis in bekleyen_siparisler %}
+            <div class="order-card">
+                <div class="receipt-num">
+                    <strong>Sipariş Fiş Numarası</strong>
+                    <h1>{{siparis.siparis_fis_num}}</h1>
+                    
+                </div>
+                
+                <h2>{{ siparis.siparis_masa }}</h2>
+                {% for siparis_urun in siparis.siparis_urunleri.all %}
+                <p><strong>{{ siparis_urun.urun.urun_ad }}</strong> - Miktar: <span class="quantity">{{ siparis_urun.miktar }}</span></p>
+                {% endfor %}
+                <div class="btn-group-vertical" role="group" aria-label="Vertical button group" style="display: block; flex-direction: column; width: 100%;">
+                    
+                    <form action="{% url 'siparis_durumu_hazir' firma.firma_kod siparis.id %}" method="POST" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-block">
+                            Hazır
+                        </button>
+                    </form>
+                        <form action="{% url 'siparis_durumu_iptal' firma.firma_kod siparis.id %}" method="POST" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-block">
+                                İptal
+                            </button>
+                        </form>
+                        
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col"id="hazirlanan_siparisler">
+        <h1 class="text-center mb-4" id="orderStatus">HAZIRLANAN SİPARİŞLER</h1>
+        <div class="flex-container">
+            {% for siparis in hazirlanan_siparisler %}
+            <div class="order-card">
+                <h2>{{ siparis.siparis_masa }}</h2>
+                {% for siparis_urun in siparis.siparis_urunleri.all %}
+                <p><strong>{{ siparis_urun.urun.urun_ad }}</strong> - Miktar: <span class="quantity">{{ siparis_urun.miktar }}</span></p>
+                {% endfor %}
+                <div class="btn-group-vertical" role="group" aria-label="Vertical button group" style="display: block; flex-direction: column; width: 100%;">
+                    <form action="{% url 'siparis_durumu_hazir_degil' firma.firma_kod siparis.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-block">
+                            Hazır Değil
+                        </button>
+                    </form>
+                    <form action="{% url 'siparis_durumu_iptal' firma.firma_kod siparis.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-block">
+                            İptal
+                        </button>
+                    </form>
+                    {% comment %} <form action="{% url 'siparis_durumu_hazir' firma.firma_kod siparis.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            Hazır
+                        </button>
+                    </form> {% endcomment %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col" id="iptal_siparisler">
+        <h1 class="text-center mb-4" id="orderStatus">İPTAL SİPARİŞLER</h1>
+        <div class="flex-container">
+            {% for siparis in iptal_siparisler %}
+            <div class="order-card">
+                <h2>{{ siparis.siparis_masa }}</h2>
+                {% for siparis_urun in siparis.siparis_urunleri.all %}
+                <p><strong>{{ siparis_urun.urun.urun_ad }}</strong> - Miktar: <span class="quantity">{{ siparis_urun.miktar }}</span></p>
+                {% endfor %}
+                <div class="btn-group-vertical" role="group" aria-label="Vertical button group" style="display: block; flex-direction: column; width: 100%;">
+                    
+                    <form action="{% url 'siparis_durumu_hazir' firma.firma_kod siparis.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-block">
+                            Hazır
+                        </button>
+                    </form>
+                    <form action="{% url 'siparis_durumu_hazir_degil' firma.firma_kod siparis.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-block">
+                            Hazır Değil
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+<script type="text/javascript">
+    // WebSocket bağlantısı kurma ve güncelleme işlemleri
+    let url = `ws://${window.location.host}/ws/siparis_durumu/`;
+    const socket = new WebSocket(url);
+    const firmaKodu = document.getElementById('firmaKodu').textContent.trim(); // Firma kodunu al
+
+    socket.onmessage = function (e) {
+        let data = JSON.parse(e.data);
+        console.log('Data:', data);
+
+        // Firma kodunu kontrol et
+        if (data.type === 'siparis_durumu.update' && data.firma_kod === firmaKodu) {
+            window.location.reload();
+        }
+    }
+</script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    .alert-message {
+        display: none;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .order-card {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 10px;
+        width: 200px;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .order-card h2 {
+        margin-bottom: 10px;
+    }
+
+    .order-card hr {
+        margin: 5px 0;
+        border: none;
+        border-top: 1px solid #ccc;
+    }
+
+    .order-card .quantity {
+        font-weight: bold;
+    }
+
+    {% comment %} .button-group {
+        margin-top: 10px;
+    }
+
+    .button-group button {
+        margin-right: 5px;
+    }
+
+    .button-group form {
+        display: inline;
+    }
+
+    .button-group button,
+    .button-group form button {
+        padding: 5px 10px;
+        border-radius: 3px;
+        border: none;
+        cursor: pointer;
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .button-group button:hover,
+    .button-group form button:hover {
+        background-color: #0056b3;
+    } {% endcomment %}
+</style>
+{% endblock content %}

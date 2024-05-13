@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block content %}
+    <script type="module"
+            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule
+            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    {% if messages %}
+        {% for message in messages %}<div class="d-none">{{ message }}</div>{% endfor %}
+    {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+          var title = "";
+          {% if message.tags == 'success' %}
+              title = "İşlem Başarılı";
+          {% elif message.tags == 'error' %}
+              title = "Hata!";
+          {% endif %}
+          
+          Swal.fire({
+              position: "top-end",
+              icon: "{{ message.tags }}",
+              text: "{{ message }}",
+              title: title,
+              showConfirmButton: false,
+              timer: 3000
+          });
+            </script>
+        {% endfor %}
+    {% endif %}
+    <div class="container">
+        <div class="row mt-3 mb-3">
+            
+            <div class="col-12">
+            
+                <form action="{% url "firma_detay_redirect" %}"
+                      method="POST"
+                      class="form-inline">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                       
+                        <input type="text"
+                               id="searchInput"
+                               placeholder="Firma kodu ile arama yap"
+                               name="firma_kod"
+                               class="form-control ml-4">
+                        <button class="input-group-text btn btn-primary">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
+    
+    #firmaTable th{
+        background-color: #FF8A08;
+        font-family: "Exo 2", sans-serif;
+        font-weight: 700 ;
+        text-align: center;
+    }
+    #firmaTable td{
+        text-align: center;
+        background-color: #FEFBF6;
+        font-family: "Exo 2", sans-serif;
+        font-weight: 400 ;
+        text-decoration: none;
+    }
+    #firmaTable td a{
+        text-decoration: none;
+    }
+    </style>
+    <div class="container">
+        <div class="row">
+            
+            <table id="firmaTable" class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Firma Kodu</th>
+                        <th scope="col">Firma Adı</th>
+                        <th scope="col">Firma Telefon</th>
+                        <th scope="col">Firma Şehir</th>
+                        <th scope="col">Firma Dış IP</th>
+                        <th scope="col">Firma Durum</th>
+                        <th scope="col">Firma Bitiş Tarihi</th>
+                        <th scope="col">Firma Oluşturan Kullanıcı</th>
+                        <th scope="col">Aksiyonlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for firma in firmalar %}
+                        <tr>
+                            <td>{{ firma.firma_kod }}</td>
+                            <td>{{ firma.firma_adi }}</td>
+                            <td>{{ firma.firma_telefon }}</td>
+                            <td>{{ firma.firma_sehir }}</td>
+                            <td>{{ firma.firma_dis_ip }}</td>
+                            <td>
+                                {% if firma.firma_durum == True %}
+                                    <i class="fa-solid fa-circle-check check-ico"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-xmark x-ico"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ firma.firma_bit_tar|date:"d-f-Y" }}</td>
+                            <td>{{ firma.firma_create_user }}</td>
+                            <td>
+                                {% comment %} <i class="fas fa-edit"></i> {% endcomment %}
+                                <a data-bs-toggle="modal"
+                                   data-bs-target="#firmaTarihi"
+                                   class="fa-solid fa-calendar-days"
+                                   title="{{ firma.firma_kod }} adlı firmanın anlaşma tarihini değiştir"></a>
+                                <a href="{% url "admin_dashboard" firma.firma_kod %}"
+                                   title="{{ firma.firma_kod }} adlı firmanın yönetici alanına git"
+                                   class="fa-solid fa-eye eye"></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a class="btn back-to-panel" href="{% url "admin_dashboard" request.user.user_frm_kod %}">Panele Dön</a>
+<div class="scroll"></div>
+                        
+<style>
+    .scroll {
+        height: 1000px;
+   }
+    .scroll p {
+        color: #fff;
+        font-size: 1.5rem;
+   }
+    .back-to-panel {
+        background: #efc468;
+        border-radius: 0;
+        color: #232323;
+        display: inline-block;
+        font-size: 1rem;
+        height: 50px;
+        line-height: 50px;
+        position: fixed;
+        right: 0;
+        text-align: center;
+        text-decoration: none;
+        text-transform: uppercase;
+        -moz-transform: rotate(-90deg);
+        -ms-transform: rotate(-90deg);
+        -o-transform: rotate(-90deg);
+        -webkit-transform: rotate(-90deg);
+        transform-origin: bottom right;
+        width: 150px;
+       /* Hover styles, media queries */
+   }
+   .back-to-panel:hover{
+    background: #efc468;
+    transform: scale(1.1); /* Ölçeklendirme efekti uygulama */
+    transition: transform 0.2s ease-in-out;
+   }
+</style>
+    <style>
+  .x-ico{
+    color:red;
+  }
+  .check-ico{
+    color:green !important;
+  }
+    #firmaTable{
+        text-decoration: none;
+    }
+    .eye{
+        color:blue
+    }
+    .trash{
+        color: red;
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script>
+  $(document).ready(function() {
+    $('#searchInput').on('input', function() {
+      var searchText = $(this).val().toLowerCase();
+      $('#firmaTable tbody tr').filter(function() {
+        $(this).toggle($(this).find('td:first').text().toLowerCase().indexOf(searchText) > -1)
+      });
+    });
+  });
+    </script>
+{% endblock content %}

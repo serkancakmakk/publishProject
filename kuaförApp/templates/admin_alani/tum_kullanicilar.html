@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load custom_filter %}
+{% block content %}
+<style>
+    #admin td{
+        background-color: #378CE7 !important;
+    }
+</style>
+<div class="container">
+{% if messages %}
+{% for message in messages  %}
+<div class="box"> 
+      <div class="error alert">
+        <div class="alert-body">
+          {{message}}
+        </div>
+        <a href="{% url "user_giris" %}">Geri Dön</a>
+    </div>
+  </div>
+{% endfor %}
+<style>
+    .box{
+        margin-top:60px;
+        display:flex;
+        justify-content:space-around;
+        flex-wrap:wrap;
+      }
+      
+      .alert{
+        margin-top:25px;
+        background-color:#fff;
+        font-size:25px;
+        font-family:sans-serif;
+        text-align:center;
+        width:300px;
+        height:400px;
+        padding-top: 150px;
+        position:relative;
+        border: 1px solid #efefda;
+        border-radius: 2%;
+        box-shadow:0px 0px 3px 1px #ccc;
+      }
+      
+      .alert::before{
+        width:100px;
+        height:100px;
+        position:absolute;
+        border-radius: 100%;
+        inset: 20px 0px 0px 100px;
+        font-size: 60px;
+        line-height: 100px;
+        border : 5px solid gray;
+        animation-name: reveal;
+        animation-duration: 1.5s;
+        animation-timing-function: ease-in-out;
+      }
+      
+      .alert>.alert-body{
+        opacity:0;
+        animation-name: reveal-message;
+        animation-duration:1s;
+        animation-timing-function: ease-out;
+        animation-delay:1.5s;
+        animation-fill-mode:forwards;
+      }
+      
+      @keyframes reveal-message{
+        from{
+          opacity:0;
+        }
+        to{
+          opacity:1;
+        }
+      }
+      
+      .success::before{
+        content: '✓';
+        background-color: #eff;
+        box-shadow: 0px 0px 12px 7px rgba(200,255,150,0.8) inset;
+        border : 5px solid green;
+      }
+      
+      .error{
+        color: red;
+      }
+      
+      .error::before{
+        content: '✗';
+        background-color: #fef;
+        box-shadow: 0px 0px 12px 7px rgba(255,200,150,0.8) inset;
+        border : 5px solid red;
+      }
+      
+      @keyframes reveal {
+        0%{
+          border: 5px solid transparent;
+          color: transparent;
+          box-shadow: 0px 0px 12px 7px rgba(255,250,250,0.8) inset;
+          transform: rotate(1000deg);
+        }
+        25% {
+          border-top:5px solid gray;
+          color: transparent;
+          box-shadow: 0px 0px 17px 10px rgba(255,250,250,0.8) inset;
+          }
+        50%{
+          border-right: 5px solid gray;
+          border-left : 5px solid gray;
+          color:transparent;
+          box-shadow: 0px 0px 17px 10px rgba(200,200,200,0.8) inset;
+        }
+        75% {
+          border-bottom: 5px solid gray;
+          color:gray;
+          box-shadow: 0px 0px 12px 7px rgba(200,200,200,0.8) inset;
+          }
+        100%{
+          border: 5px solid gray;
+          box-shadow: 0px 0px 12px 7px rgba(200,200,200,0.8) inset;
+        }
+      }
+.row{
+    display:none;
+}      
+</style>
+{% endif %}
+    <div class="row">
+        <div class="search-container" style="width:50%;">
+            <input type="text" id="search-input" class="form-control" placeholder="Firma,Firma Kod,Username,Adı ile arama yapılabilir. Tam Sonuç İçin uuid ile arama yapınız">
+        </div>
+        <table class="table table-responsive" id="user-table">
+            <thead>
+                <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">Firma Adı</th>
+                    <th scope="col" >Firma Kodu</th>
+                    <th scope="col">Kullanıcı Adı</th>
+                    <th scope="col">Durum</th>
+                    <th scope="col">Kayıt Yetki</th>
+                    <th scope="col">Silme Yetki</th>
+                    <th scope="col">Kayıt Kullanıcı</th>
+                    <th scope="col">Kayıt Zamanı</th>
+                    <th scope="col">Unique ID</th>
+                    <th scope="col">Kullanıcı Adı</th>
+                    <th scope="col">Şifre</th>
+                    <th scope="col">Detay</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr {% if user.user_firma.first.firma_kod == '-1' %}id="admin"{% endif %}>
+                    <td>{{ user.id }}</td>
+                    <td class="user_firma">{{ user.user_firma.first.firma_adi }}</td>
+                    <td class="user_frm_kod"
+                    >
+                    {{ user.user_firma.first.firma_kod }}
+                </td>
+                    <td class="user_adi">{{ user.user_adi }} {{ user.user_soyad }}</td>
+                    <td>{{ user.user_durum }}</td>
+                    <td>{{ user.user_kayit_yetki }}</td>
+                    <td>{{ user.user_sil_yetki }}</td>
+                    <td>{{ user.user_kayit_user }}</td>
+                    <td>{{ user.user_kayit_zaman|date:"d F Y"}}</td>
+                    <td class="unique_id">
+                        <button type="button"  class="btn btn-secondary" id="popoverButton{{ user.id }}">
+                            {{ user.unique_id|slice4 }}
+                        </button>
+                        <div id="popoverContent{{ user.id }}" style="display: none;">
+                            {% if user.user_firma.first.firma_kod == '-1' %}
+                                Admin UUID görüntülenmiyor
+                            {% else %}
+                                {{ user.unique_id }}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var popoverTriggerList = [].slice.call(document.querySelectorAll('#popoverButton{{ user.id }}'));
+                            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+                                return new bootstrap.Popover(popoverTriggerEl, {
+                                    container: 'body',
+                                    placement: 'bottom',
+                                    html: true,
+                                    content: function () {
+                                        return document.getElementById('popoverContent{{ user.id }}').innerHTML;
+                                    }
+                                })
+                            });
+                        });
+                    </script>
+                   
+                    <td class="username">{{ user.username }}</td>
+                    <td>{{ user.password }}</td>
+                    <td>
+                        <a href="{% url "kullanici_detay" user.unique_id %}">Detay Gör</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById('search-input').addEventListener('input', function() {
+        var searchTerm = this.value.toLowerCase();
+        var rows = document.querySelectorAll('.table tbody tr');
+        rows.forEach(function(row) {
+            var firmaCell = row.querySelector('.user_firma');
+            var kodCell = row.querySelector('.user_frm_kod');
+            var adCell = row.querySelector('.user_adi');
+            var uniqueIdCell = row.querySelector('.unique_id');
+            var usernameCell = row.querySelector('.username');
+    
+            if (firmaCell && kodCell && adCell && uniqueIdCell && usernameCell) {
+                var firmaMatch = firmaCell.textContent.toLowerCase().includes(searchTerm);
+                var kodMatch = kodCell.textContent.toLowerCase().includes(searchTerm);
+                var adMatch = adCell.textContent.toLowerCase().includes(searchTerm);
+                var uniqueIdMatch = uniqueIdCell.textContent.toLowerCase().includes(searchTerm);
+                var usernameMatch = usernameCell.textContent.toLowerCase().includes(searchTerm);
+    
+                if (firmaMatch || kodMatch || adMatch || uniqueIdMatch || usernameMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

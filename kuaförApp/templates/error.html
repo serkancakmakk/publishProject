@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Sayfa Bulunamadı</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="digit">4</span>
+            <span class="digit"><i class='bx bx-coffee-togo'></i></span>
+            <span class="digit"><i class='bx bx-coffee-togo'></i></span>
+            <span class="digit">4</span>
+        </h1>
+        <p>Üzgünüz, 3 Dakika Geçmeden Yeni Bir Masaya Bağlanamazsınız</p>
+        <a href="{% url "siparis_ver" eski_masa.masa_short_url %}">Eski Masaya Dön</a>
+        <style>
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-20px); }
+            }
+            
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25%, 75% { transform: translateY(-30px); }
+                50% { transform: translateX(20px); }
+            }
+            @keyframes shake-reverse {
+                0%, 100% { transform: translateX(0); }
+                25%, 75% { transform: translateY(20px); }
+                50% { transform: translateX(-30px); }
+            }
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f3f3f3;
+            }
+            
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                text-align: center;
+            }
+            
+            h1 {
+                font-size: 95px;
+                margin: 0;
+                color: #555;
+                text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Shadow Pop efekti */
+            }
+            
+            .digit {
+                display: inline-block;
+                animation-duration: 2s;
+                animation-iteration-count: infinite;
+            }
+            
+            .digit:nth-child(1) {
+                animation-name: bounce;
+            }
+            
+            .digit:nth-child(2) {
+                animation-name: shake;
+            }
+            
+            .digit:nth-child(4) {
+                animation-name: bounce;
+            }
+            .digit:nth-child(3) {
+                animation-name: shake-reverse;
+            }
+            
+            p {
+                font-size: 24px;
+                margin: 20px 0;
+                color: #777;
+            }
+            
+            a {
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            
+            a:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </div>
+</body>
+</html>
+{% endblock content %}

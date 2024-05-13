@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filter %}
+
+{% block content %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Profile</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        .list-group-item.active {
+            background: rgb(0,212,255)!important;
+background: linear-gradient(90deg, rgba(0,212,255,1) 0%, rgba(199,246,255,1) 100%, rgba(255,255,255,1) 100%, rgba(85,255,241,1) 100%)!important;
+}
+.bg-warning {
+    background: red !important;
+}
+.bg-success {
+    background: green !important;
+}
+.col-md-4{
+font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+</style>
+<body>
+    {% if messages %} {% for message in messages  %} <div class="d-none">
+        {{message}}
+      </div> {% endfor %} {% endif %}
+      {% if messages %}
+      {% for message in messages %}
+          <div class="d-none">
+              {{ message }}
+          </div>
+          <script>
+              var title = "";
+              {% if message.tags == 'success' %}
+                  title = "İşlem Başarılı";
+              {% elif message.tags == 'error' %}
+                  title = "Hata!";
+              {% endif %}
+              
+              Swal.fire({
+                  position: "top-end",
+                  icon: "{{ message.tags }}",
+                  text: "{{ message }}",
+                  title: title,
+                  showConfirmButton: false,
+                  timer: 3000
+              });
+          </script>
+      {% endfor %}
+  {% endif %}
+  <div class="container">
+    <div class="row mt-4">
+        <!-- Navbar -->
+        <style>
+            .nav-link:hover {
+                background-color: brown; /* Belirginleştirilmiş arkaplan rengi */
+                transform: scale(1.09); /* Scale efekti */
+                transition: transform 0.2s ease; /* Animasyon süresi ve geçiş türü */
+                color: white;
+            }
+            .nav-link.profile {
+                font-size: 1.2em; /* Daha büyük font boyutu */
+                font-weight: bold; /* Kalın yazı tipi */
+            }
+            .nav-link.active{
+                background-color: brown !important;
+            }
+            .list-group-item:hover{
+                background-color: #5BBCFF;
+            }
+        </style>
+        
+        <div class="col-md-4">
+            <div class="border p-3">
+                <div class="text-center"> <!-- İçeriği ortalamak için text-center sınıfı eklendi -->
+                    <div class="d-flex justify-content-center">
+                        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <!-- Profil Fotoğrafı Alanı -->
+                            {% if user.user_image %}
+                            <div class="d-flex justify-content-center">
+                                <img src="{{ user.user_image.url }}" alt="Profil Resmi" class="rounded-circle" style="width: 120px;">
+                            </div>
+                            {% endif %}
+                            <hr>
+                            <button class="btn btn-info"style="font-weight: bold;">"{{ user.username }}"</button>
+                            <hr>
+                            <button class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">Profil Bilgileri</button>
+                            <hr>
+                            <button class="nav-link" id="v-pills-disabled-tab" data-bs-toggle="pill" data-bs-target="#v-pills-yetkiler" type="button" role="tab" aria-controls="v-pills-disabled" aria-selected="false">Yetkiler</button>
+                            <hr>
+                            <button class="nav-link" id="v-pills-bilgi_güncelle-tab" data-bs-toggle="pill" data-bs-target="#v-pills-bilgi_güncelle" type="button" role="tab" aria-controls="v-pills-bilgi_güncelle" aria-selected="false">Kullanıcı Bilgilerini Düzenle</button>
+                            <hr>
+                            <a class="btn btn-warning" href="{% url "admin_dashboard" request.user.user_frm_kod %}">Firma Sayfasına Dön</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Alanı -->
+        <div class="col-md-8 user-det">
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    <!-- Profile içeriği -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                {% if user.user_image %}
+                                <div class="col-md-4 d-flex align-items-center justify-content-center">
+                                    <img src="{{ user.user_image.url }}" style="width: 100%; height: auto;" alt="Profil Resmi" class="card-img-top p-1 {% if user.user_durum == True %}bg-success{% else %} bg-warning{% endif %}" style="width: 110px;">
+                                </div>
+                                {% endif %}
+                                <div class="col-md-8 user">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><strong>Kullanıcı Adı:</strong> {{ user.user_adi }}</li>
+                                        <li class="list-group-item"><strong>Kullanıcı Şifre:</strong> {{ user.user_adi }}</li>
+                                        <li class="list-group-item"><strong>Ad:</strong> {{ user.user_adi }}</li>
+                                        <li class="list-group-item"><strong>Soyad:</strong> {{ user.user_soyad }}</li>
+                                        <li class="list-group-item"><strong>Telefon:</strong> {{ user.user_telefon }}</li>
+                                        <li class="list-group-item"><strong>Adres:</strong> {{ user.user_adres }}</li>
+                                        <li class="list-group-item"><strong>Cinsiyet:</strong> {{ user.user_cinsiyet }}</li>
+                                        <li class="list-group-item"><strong>Doğum Tarihi:</strong> {{ user.user_dogum_tarihi }}</li>
+                                        <li class="list-group-item"><strong>E-Posta:</strong> {{ user.user_email }}</li>
+                                        <li class="list-group-item"><strong>Durum:</strong>
+                                            {% if user.user_durum %}
+                                                <span class="badge rounded-pill bg-success">Aktif</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-warning">Pasif</span>
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <!-- Yetkiler içeriği -->
+                <div class="col-md-12">
+                    <div class="tab-content mt-3">
+                        <div class="tab-pane fade show" style="display:none"id="v-pills-yetkiler" role="tabpanel" aria-labelledby="v-pills-yetkiler-tab">
+                            
+                            <form method="post" action="{% url 'yetki_ver' firma.firma_kod user.unique_id %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- Yetki: Firmaları Listele -->
+                                    <div class="col-4">
+                                        <h5>Listeleme / Görüntüleme Yetkileri</h5>
+                                        {% if user.user_frm_kod == "-1" %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.firmalari_listele %}checked{% endif %} name="firmalari_listele" id="firmalari_listele">
+                                            <label class="form-check-label" for="firmalari_listele">Firmaları Listele</label>
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.tanimlari_listele %}checked{% endif %} name="tanimlari_listele" id="tanimlari_listele">
+                                            <label class="form-check-label" for="tanimlari_listele">Tanımları Listele</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.ürünleri_listele %}checked{% endif %} name="ürünleri_listele" id="ürünleri_listele">
+                                            <label class="form-check-label" for="ürünleri_listele">Ürünleri Listele</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.masalari_listele %}checked{% endif %} name="masalari_listele" id="masalari_listele">
+                                            <label class="form-check-label" for="masalari_listele">Masaları Listele</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kategorileri_listele %}checked{% endif %} name="kategorileri_listele" id="kategorileri_listele">
+                                            <label class="form-check-label" for="kategorileri_listele">Kategorileri Listele</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kullanicilari_listele %}checked{% endif %} name="kullanicilari_listele" id="kullanicilari_listele">
+                                            <label class="form-check-label" for="kullanicilari_listele">Kullanıcıları Listele</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kullanici_yetkilendir %}checked{% endif %} name="kullanici_yetkilendir" id="kullanici_yetkilendir">
+                                            <label class="form-check-label" for="kullanici_yetkilendir">Kullanıcıları Yetkilendir</label>
+                                        </div>
+                                    </div>
+                                    <!-- Yetki: Firmaları Ekle -->
+                                    <div class="col-4">
+                                        <h5>Ekleme / Düzenleme Yetkileri</h5>
+                                        {% if user.user_frm_kod == "-1" %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.firma_ekle %}checked{% endif %} name="firma_ekle" id="firma_ekle">
+                                            <label class="form-check-label" for="firma_ekle">Firma Ekle</label>
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kategori_ekle %}checked{% endif %} name="kategori_ekle" id="kategori_ekle">
+                                            <label class="form-check-label" for="kategori_ekle">Kategori Ekle</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.ürün_ekle %}checked{% endif %} name="ürün_ekle" id="ürün_ekle">
+                                            <label class="form-check-label" for="ürün_ekle">Ürün Ekle</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.konum_ekle %}checked{% endif %} name="konum_ekle" id="konum_ekle">
+                                            <label class="form-check-label" for="konum_ekle">Konum Ekle</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.masa_ekle %}checked{% endif %} name="masa_ekle" id="masa_ekle">
+                                            <label class="form-check-label" for="masa_ekle">Masa Ekle</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kullanici_ekle %}checked{% endif %} name="kullanici_ekle" id="kullanici_ekle">
+                                            <label class="form-check-label" for="kullanici_ekle">Kullanıcı Ekle</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.kullanici_güncelle %}checked{% endif %} name="kullanici_güncelle" id="kullanici_güncelle">
+                                            <label class="form-check-label" for="kullanici_güncelle">Kullanıcı Güncelle</label>
+                                        </div>
+                                    </div>
+                                    <!-- Yetki: Firmaları Sil -->
+                                    <div class="col-4">
+                                        <h5>Silme / Pasife Alma Yetkileri {{request.user.id}}</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" {% if user.yetkiler.firma_sil %}checked{% endif %} name="firma_sil" id="firma_sil">
+                                            <label title="Bu yetkiyi verirken dikkatli olunuz.Firma Pasifteyken hiçbir işlem yapılamaz." class="form-check-label" for="firma_sil">Firmayı Pasife Al</label><br>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="shattered-glass-button" {% if not request.user.yetkiler.kullanici_yetkilendir %} disabled {% endif %}>
+                                        <strong>
+                                            {% if not request.user.yetkiler.kullanici_yetkilendir %} Bu işleme yetkiniz bulunmuyor. {% else %} Yetkilendir. {% endif %}
+                                        </strong>
+                                    </button>
+                                    <style>
+                                        .shattered-glass-button {
+                                            background: linear-gradient(45deg, #54BC49 50%, #f5f5f5 50%);
+                                            background-size: 200% 100%;
+                                            color: #fff;
+                                            border: none;
+                                            padding: 15px 30px;
+                                            border-radius: 10px;
+                                            transition: background-position 0.5s ease;
+                                          }
+                                          
+                                          .shattered-glass-button:hover {
+                                            background-position: -100% 0;
+                                            color: #000;
+                                          }
+                                    </style>
+                                </div>
+                                
+                            </form>
+                        </div>
+                        </div>
+            </div>
+            <!-- Yetkiler içeriği -->
+            <div class="col-md-12">
+                <div class="tab-pane fade show" style="display:none" id="v-pills-bilgi_güncelle" role="tabpanel" aria-labelledby="v-pills-bilgi_güncelle-tab">
+                    <!-- Disabled içeriği -->
+                    <div class="d-flex flex-column align-items-center text-center">
+                    {% if user.user_image %}
+                    <img src={{user.user_image.url}} alt="Admin"
+                        class="rounded-circle p-1 bg-warning" width="110">
+                </div>
+                {% endif %}
+                    <h5 class="card-title">Bilgi Güncelle</h5>
+                    <form action="{% url "user_update" firma.firma_kod user.unique_id  %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="formFile" class="form-label">Fotoğraf Yükleyiniz</label>
+                            <input class="form-control" name="user_image" type="file" id="formFile">
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Kullanıcı Adı</label>
+                                <input type="text" value="{{user.username}}" name="username" class="form-control">
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Şifre</label>
+                                <input type="password" value="{{user.password}}" name="password" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Adı</label>
+                                <input type="text" value="{{user.user_adi}}" name="user_adi" class="form-control">
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Soyadı</label>
+                                <input type="text" value="{{user.user_soyad}}" name="user_soyad" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">İletişim Numarası</label>
+                            <input type="text" value="{{user.user_telefon}}" name="user_telefon" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-Posta Adresi</label>
+                            <input type="text" value="{{user.user_email}}" name="user_email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Adres</label>
+                            <input type="text" value="{{user.user_adres}}" name="user_adres" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cinsiyet</label>
+                            <select class="form-select" name="user_cinsiyet">
+                                <option selected value="{{ user.user_cinsiyet }}">{{ user.user_cinsiyet }}</option>
+                                <option value="E">Erkek</option>
+                                <option value="K">Kadın</option>
+                                <option value="B">Belirtilmedi</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Doğum Tarihi</label>
+                            <input type="date" value="{{ user.user_dogum_tarihi|date:'Y-m-d' }}" name="user_dogum_tarihi" class="form-control">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" value="True" name="user_durum" id="flexCheckDefault" {% if user.user_durum == True %}checked{% endif %}>
+                            <label class="form-check-label" for="flexCheckDefault">Kullanıcı Durumu</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                          
+                            
+                            <button class="shattered-glass-button" {% if not request.user.yetkiler.kullanici_guncelle %} disabled {% endif %}>
+                                <strong>
+                                    {% if not request.user.yetkiler.kullanici_guncelle %} Bu işleme yetkiniz bulunmuyor. {% else %} Güncelle. {% endif %}
+                                </strong>
+                            </button>
+                            
+                        </div>
+                    </form>
+                </div>
+                </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>       <!-- Settings içeriği -->
+
+<script>
+    document.querySelectorAll('.nav-link').forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Tüm bağlantıları aktiflik sınıfından kaldır
+            document.querySelectorAll('.nav-link').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+
+            // Tıklanan bağlantıya aktiflik sınıfını ekle
+            this.classList.add('active');
+
+            // Tüm collapse bölümlerini gizle
+            document.querySelectorAll('.tab-pane').forEach(function(tabPane) {
+                tabPane.classList.remove('show');
+                tabPane.style.display = 'none';
+            });
+
+            // Tıklanan bağlantının collapse bölümünü göster
+            var target = document.querySelector(this.getAttribute('data-bs-target'));
+            if (target) {
+                target.classList.add('show');
+                target.style.display = 'block';
+            }
+        });
+    });
+</script>
+</body>
+<style>
+    body {
+        background-image: url("{% static 'project-image/indir1.png' %}");
+        /* Arkaplan resminin tüm sayfa boyunca yayılmasını istiyorsanız aşağıdaki özellikleri ekleyebilirsiniz */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+</style>
+{% endblock content %}

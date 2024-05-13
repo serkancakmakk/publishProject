@@ -1,0 +1,1950 @@
+{% extends "base.html" %} {% load static %} {% load tz %} {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{firma.firma_adi}} | Admin Paneli</title>
+    <!-- ======= Styles ====== -->
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="{% static 'js/kat_düzenle.js' %}"></script>
+    <!-- Bootstrap JavaScript dosyaları -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  </head> {% if messages %} {% for message in messages  %} <div class="d-none">
+    {{message}}
+  </div> {% endfor %} {% endif %}
+  {% if messages %}
+  {% for message in messages %}
+      <script>
+          var title = "";
+          {% if message.tags == 'success' %}
+              title = "İşlem Başarılı";
+          {% elif message.tags == 'error' %}
+              title = "Hata!";
+          {% endif %}
+          
+          Swal.fire({
+              position: "top-end",
+              icon: "{{ message.tags }}",
+              text: "{{ message }}",
+              title: title,
+              showConfirmButton: false,
+              timer: 3000
+          });
+      </script>
+  {% endfor %}
+{% endif %}
+
+
+   
+
+{% if firma.firma_durum == False %}
+<style>
+  .modal-confirm {		
+    color: #434e65;
+    width: 525px;
+  }
+  .modal-confirm .modal-content {
+    padding: 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+  }
+  .modal-confirm .modal-header {
+    background: #ff3333; /* Kırmızı arka plan */
+    border-bottom: none;   
+    position: relative;
+    text-align: center;
+    margin: -20px -20px 0;
+    border-radius: 5px 5px 0 0;
+    padding: 35px;
+  }
+  .modal-confirm h4 {
+    text-align: center;
+    font-size: 36px;
+    margin: 10px 0;
+  }
+  .modal-confirm .form-control, .modal-confirm .btn {
+    min-height: 40px;
+    border-radius: 3px; 
+  }
+  .modal-confirm .close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #fff;
+    text-shadow: none;
+    opacity: 0.5;
+  }
+  .modal-confirm .close:hover {
+    opacity: 0.8;
+  }
+  .modal-confirm .icon-box {
+    color: #fff;		
+    width: 95px;
+    height: 95px;
+    display: inline-block;
+    border-radius: 50%;
+    z-index: 9;
+    border: 5px solid #fff;
+    padding: 15px;
+    text-align: center;
+  }
+  .modal-confirm .icon-box i {
+    font-size: 64px;
+    margin: -4px 0 0 -4px;
+  }
+  .modal-confirm.modal-dialog {
+    margin-top: 80px;
+  }
+  .modal-confirm .btn, .modal-confirm .btn:active {
+    color: #fff;
+    border-radius: 4px;
+    background: #ff3333 !important; /* Kırmızı arka plan */
+    text-decoration: none;
+    transition: all 0.4s;
+    line-height: normal;
+    border-radius: 30px;
+    margin-top: 10px;
+    padding: 6px 20px;
+    border: none;
+  }
+  .modal-confirm .btn:hover, .modal-confirm .btn:focus {
+    background: #ff6666 !important; /* Kırmızı hafiften daha koyu */
+    outline: none;
+  }
+  .modal-confirm .btn span {
+    margin: 1px 3px 0;
+    float: left;
+  }
+  .modal-confirm .btn i {
+    margin-left: 1px;
+    font-size: 20px;
+    float: right;
+  }
+  .trigger-btn {
+    display: inline-block;
+    margin: 100px auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- Pasif durum bildirimi için modal -->
+<div id="pasifDurumModal" class="modal fade">
+<div class="modal-dialog modal-confirm">
+  <div class="modal-content">
+    <div class="modal-header justify-content-between"> <!-- Changed here -->
+      <div class="icon-box">
+        <i class="material-icons">&#xE14C;</i> <!-- Çarpı simgesi -->
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body text-center">
+      <h4>Üzgünüm</h4>  
+      <p>Firma Durumu Pasif Görünüyor.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<script>
+var myModal = new bootstrap.Modal(document.getElementById('pasifDurumModal'), {
+  keyboard: false
+});
+myModal.show();
+</script>
+<style>
+  #p{
+    color: red;
+  }
+  .pasif {
+    display: inline-block; /* Harfleri blok olarak göster */
+  }
+
+  #firmaDurumuPasifDiv {
+    margin-top: 150px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center; /* Metni ortala */
+  }
+
+  /* Harf animasyonları */
+  @keyframes harfAnimasyonu1 {
+    0%, 100% {
+      transform: translateY(0); /* Başlangıç ve bitiş durumu: Normal konumda */
+    }
+    50% {
+      transform: translateY(-10px); /* Orta noktada yukarıda */
+    }
+  }
+
+  @keyframes harfAnimasyonu2 {
+    0%, 100% {
+      transform: translateY(0); /* Başlangıç ve bitiş durumu: Normal konumda */
+    }
+    50% {
+      transform: translateY(-15px); /* Orta noktada yukarıda */
+    }
+  }
+
+  @keyframes harfAnimasyonu3 {
+    0%, 100% {
+      transform: translateY(0); /* Başlangıç ve bitiş durumu: Normal konumda */
+    }
+    50% {
+      transform: translateY(-20px); /* Orta noktada yukarıda */
+    }
+  }
+
+  /* Harflere animasyonları uygula */
+  .harf1 {
+    animation: harfAnimasyonu1 2s infinite alternate;
+    animation-delay: 0.1s; /* Rastgele zamanlama */
+  }
+
+  .harf2 {
+    animation: harfAnimasyonu2 2s infinite alternate;
+    animation-delay: 0.2s; /* Rastgele zamanlama */
+  }
+
+  .harf3 {
+    animation: harfAnimasyonu3 2s infinite alternate;
+    animation-delay: 0.3s; /* Rastgele zamanlama */
+  }
+</style>
+</head>
+<body>
+
+<div id="firmaDurumuPasifDiv">
+  <h1>
+    <strong class="pasif harf1">F</strong>
+    <strong class="pasif harf2">i</strong>
+    <strong class="pasif harf3">r</strong>
+    <strong class="pasif harf1">m</strong>
+    <strong class="pasif harf2">a</strong>
+    <strong class="pasif harf3"> </strong>
+    <strong class="pasif harf1">D</strong>
+    <strong class="pasif harf2">u</strong>
+    <strong class="pasif harf3">r</strong>
+    <strong class="pasif harf1">u</strong>
+    <strong class="pasif harf2">m</strong>
+    <strong class="pasif harf3">u</strong>
+    <strong class="pasif harf1"> </strong>
+    <strong id="p"class="pasif harf2">P</strong>
+    <strong id="p" class="pasif harf3">a</strong>
+    <strong id="p"class="pasif harf1">s</strong>
+    <strong id="p" class="pasif harf2">i</strong>
+    <strong id="p" class="pasif harf3">f</strong><br>
+    <strong>
+     Firma Kodu : {{firma.firma_kod}}    </strong>
+  </h1>
+  <small>Herhangi bir işlem yapmanıza izin verilmeyecek.
+    {% if request.user.username == 'orqerr' or request.user.user_frm_kod == "-1" %}
+    <a href="" data-bs-toggle="modal" data-bs-target="#exampleModal">Firmayı Aktif Hale Getir.</a>
+    <!-- Modal -->
+    <form action="{% url "firma_durumunu_aktiflestir" firma.firma_kod %}" method="POST">
+      {% csrf_token %}
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Firma Süresini Uzat</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="">Firma bitiş tarihi kaç gün uzatılacak?</label>
+        <input type="date"class="form-control" name="firma_bit_tar">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Kaydet</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+    {% endif %}
+  </small>
+</div>
+{% else %}
+<script>
+  document.getElementById("menuIcon").addEventListener("click", function() {
+    var navigation = document.querySelector(".navigation");
+    navigation.classList.toggle("active");
+});
+</script>
+  <!-- =============== Navigation ================ -->
+  <div class="full-width-content">
+    <div class="navigation" id="navigation">
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Tüm ".toggle" sınıfına sahip elementleri seçin
+            var toggleElements = document.querySelectorAll(".toggle");
+            var navigationElements = document.getElementById("navigation");
+            // Her bir toggle elementi için tıklama olayı ekleyin
+            toggleElements.forEach(function(toggleElement) {
+                toggleElement.addEventListener("click", function() {
+                    console.log("Tıkladınız!");
+                    navigationElements.classList.toggle("active");
+                });
+            });
+        });
+        </script>
+    
+      <ul>
+        <li>
+          <a href="#">
+            <span class="icon">
+              <i class='bx bx-qr-scan'></i>
+            </span>
+            <span class="title">{{firma.firma_adi}}</span>
+          </a>
+        </li>
+        <li>
+          <style>
+            /* CSS ile hover efekti tanımlama */
+            li:hover {
+                background-color: #f0f0f0; /* Hover olduğunda arka plan rengini değiştir */
+                cursor: pointer; /* Fare imlecini bir el işareti yap */
+                color:black;
+            }
+            li:hover span{
+              color:black;
+            }
+            </style>
+          <a href="{% url "admin_dashboard" request.user.user_frm_kod %}">
+            <span class="icon">
+              <ion-icon name="home-outline"></ion-icon>
+            </span>
+            <span class="title">Dashboard</span>
+          </a>
+        </li>
+
+        <li>
+          <li>
+            <a href="{% url 'user_detail' firma.firma_kod request.user.unique_id %}">
+              <span class="icon">
+                {% if request.user.user_image %}
+                <img src="{{request.user.user_image.url}}" style="width: 32px; height: 32px;" alt="">
+                {% endif %}
+              </span>
+              <span class="title">{{request.user.username}}</span>
+            </a>
+          </li>
+          {% if request.user.user_frm_kod == "-1" and request.user.username == "orqerr" %}
+    <li>
+      <a href="" data-bs-toggle="modal" data-bs-target="#firmaDüzenle">
+        <span class="icon">
+          <ion-icon name="people-outline"></ion-icon>
+        </span>
+        <span class="title">
+          <strong>Firma Bilgilerini Değiştir
+            
+          </strong>
+
+        </span>
+      </a>
+    </li>
+    
+  {% endif %}
+  {% if request.user.username == 'orqerr' or yetkiler.firmalari_listele %}
+    <li>
+      <a href="{% url "tum_firmalar" %}">
+        <span class="icon">
+          <ion-icon name="people-outline"></ion-icon>
+        </span>
+        <span class="title">Firmalar</span>
+      </a>
+    </li>
+  {% endif %}
+  <li>
+    <a href="{% url "siparis_bar_takip" firma.firma_kod %}">
+      <span class="icon">
+        <ion-icon name="desktop-outline"></ion-icon>
+      </span>
+      <span class="title">Bar Takip Ekranına Git</span>
+    </a>
+  </li>
+  <li>
+    <a href="{% url "siparis_ekranina_git" firma.firma_kod %}">
+      <span class="icon">
+        <ion-icon name="receipt-outline"></ion-icon>
+      </span>
+      <span title="İlk Oluşturulan Masaya Gider" class="title">Sipariş Ver</span>
+    </a>
+  </li>
+        <li>
+           <!-- Firma Ekle Modalı -->
+        
+           {% if request.user.username == 'orqerr' or yetkiler.firma_ekle %}
+          <a href="" data-bs-toggle="modal" data-bs-target="#firmaEkleModal">
+            <span class="icon">
+              <ion-icon name="add-circle-outline"></ion-icon>
+            </span>
+            <span class="title">Firma Ekle</span>
+          </a>
+          
+        </li>
+       
+        {% endif %}
+        {% if request.user.username == "orqerr" or request.user.user_frm_kod == "-1" and yetkiler.guncelleme_talepleri %}
+        <li>
+          <a href="{% url "güncelleme_talep_eden_sirketler" %}">
+            <span class="icon">
+              <ion-icon name="file-tray-stacked-outline"></ion-icon>
+            </span>
+            <span class="title">Güncelleme Talepleri</span>
+          </a>
+        </li>
+        {% endif %}
+        <li>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#helpModal">
+            <span class="icon">
+              <ion-icon name="help-outline"></ion-icon>
+            </span>
+            <span class="title">Destek / Hata Bildir</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="#">
+            <span class="icon">
+              <ion-icon name="settings-outline"></ion-icon>
+            </span>
+            <span class="title">Settings</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <span class="icon">
+              <ion-icon name="lock-closed-outline"></ion-icon>
+            </span>
+            <span class="title">Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url "user_logout" %}">
+            <span class="icon">
+              <ion-icon name="log-out-outline"></ion-icon>
+            </span>
+            <span class="title">Sign Out</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- ========================= Main ==================== -->
+    {% if kalan_gun < 3 %}
+    <div class="alert alert-info alert-dismissible fade show text-center" style="width: 100%; float:right; z-index: 999999; margin-bottom: 150px;" role="alert">
+      <h4 class="alert-heading">Merhaba</h4>
+      <p>Firma anlaşma bitiş tarihini <strong>{{kalan_gun}}</strong> gün kaldı.</p>
+      <hr>
+      <p class="mb-0">Anlaşma yenilenmezse firma pasife alınır ve hiçbir işlem <strong>yapılamaz!</strong></p>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <div class="main">
+      <div class="topbar">
+        <div class="toggle">
+          <ion-icon name="menu-outline" id="menuIcon"></ion-icon>
+        </div>
+        {% comment %} <div class="search">
+          <label>
+            <input type="text" placeholder="Search here">
+            <ion-icon name="search-outline"></ion-icon>
+          </label>
+        </div> {% endcomment %}
+        <div class="user">
+          {% if request.user.user_image %}
+                <img src="{{request.user.user_image.url}}" style="width: 32px; height: 32px;" alt="">
+          {% else %}
+                <img src="{% static 'project-image/user-personal.png' %}" style="width: 32px; height: 32px;" alt="">
+          {% endif %}
+        </div>
+      </div>
+      <!-- ======================= Cards ================== -->
+      <div class="cardBox">
+        <div class="card">
+          <div>
+            <div class="numbers">{{toplam_siparis}}</div>
+            <div class="cardName">Toplam Sipariş</div>
+          </div>
+          <div class="iconBx">
+            <ion-icon name="receipt-outline"></ion-icon>
+          </div>
+        </div>
+        <div class="card" data-bs-toggle="modal" data-bs-target="#exampleModal">
+          <div>
+            <div class="numbers">{{firma.firma_kod}}</div>
+            <div class="cardName">Şirket Bilgilerim</div>
+          </div>
+          <div class="iconBx">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <!-- Modal -->
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-xl">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">{{ firma.firma_ünvan }} Detayları <i title="Bu sayfada Güncelleme Yapamazsınız Sadece Güncelleme Talep Edebilirsiniz" class="fa-solid fa-question fa-shake"></i>
+                      </h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="row">
+                          <div class="col-8">
+                              <table class="table table-responsive text-center">
+                                  <thead>
+                                      <tr>
+                                          <th scope="col">Firma Kod</th>
+                                          <th scope="col">Firma Adı</th>
+                                          <th scope="col">Firma Adresi</th>
+                                          <th scope="col">Firma Telefon</th>
+                                          <th scope="col">Firma Telefon</th>
+                                          <th scope="col">Firma Şehir</th>
+                                          <th scope="col">Firma İlçe</th>
+                                          <th scope="col">Firma Ünvan</th>
+                                          <th scope="col">Firma İp</th>
+                                          <th scope="col">Firma Durum</th>
+                                          <th scope="col">Bitiş Tarihi</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr>
+                                          <th scope="row">{{ firma.firma_kod }}</th>
+                                          <td>{{ firma.firma_adi }}</td>
+                                          <td>{{ firma.firma_adres }}</td>
+                                          <td>{{ firma.firma_telefon }}</td>
+                                          <td>{{ firma.firma_telefon2 }}</td>
+                                          <td>{{ firma.firma_sehir }}</td>
+                                          <td>{{ firma.firma_ilce }}</td>
+                                          <td>{{ firma.firma_ünvan }}</td>
+                                          <td>{{ firma.firma_dis_ip }}</td>
+                                          <td>
+                                              {% if firma.firma_durum == True %}
+                                              <span class="badge text-bg-success">Aktif</span>
+                                              {% endif %}
+                                              {% if firma.firma_durum == False %}
+                                              <span class="badge text-bg-danger">Pasif</span>
+                                              {% endif %}
+                                          </td>
+                                          <td>{{ firma.firma_bit_tar|date:"d-m-Y" }}</td>
+      
+                                      </tr>
+                                  </tbody>
+                              </table>
+                          </div>
+                          <div class="col-4">
+                              <table class="table table-responsive text-center">
+                                  <tbody>
+                                      <tr class="update_request">
+                                          <td>
+                                            <style>
+                                              .request_update_strong{
+                                                color: green;
+                                              }
+                                            </style>
+                                            <strong class="request_update_strong">Güncelleme Talep Etmek İstediğiniz Alanları İşaretleyin.</strong>
+                                              <form method="POST" action="{% url "güncelleme_talep_et" firma.firma_kod %}">
+                                                <input type="hidden" name="firma_kod" value={{firma.firma_kod}}>
+                                                  {% csrf_token %}
+                                                  {% for form_fields in company_update_form %}
+                                                  <div class="form-check form-switch mr-2">
+                                                      <label class="form-check-label" for="{{ form_fields.id_for_label }}">
+                                                          {{ form_fields.label }}
+                                                      </label>
+                                                      {{ form_fields }}
+                                                  </div>
+                                                  {% endfor %}
+                                                  <button type="submit" class="btn btn-info">Talep Oluştur <i class="fa-solid fa-hourglass-start fa-spin-pulse"></i></button>
+                                                  <hr>
+                                                  <small>
+                                                   
+                                                    Lütfen aktif bir güncelleme talebiniz varsa ikinci bir talep iletmeyiniz.<br>
+                                                   < Admin >
+                                                    
+                                                  </small>
+                                              </form>
+                                          </td>
+                                      </tr>
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+        <div class="card">
+          <div>
+            <div class="numbers">284</div>
+            <div class="cardName">Comments</div>
+          </div>
+          <style>
+            #rated{
+              color:yellow;
+              width:30px;
+            }
+          </style>
+          <div class="iconBx">
+            <ion-icon id="rated" name="star"></ion-icon>
+            <ion-icon id="rated" name="star"></ion-icon>
+            <ion-icon id="rated" name="star"></ion-icon>
+            <ion-icon id="rated" name="star"></ion-icon>
+            <ion-icon id="rated" name="star"></ion-icon>
+          </div>
+        </div>
+        <div class="card">
+          <div>
+            <div class="numbers">{{firma.firma_bit_tar|date:"j F Y"}}</div>
+            <div class="cardName">Anlaşma Bitiş Tarihi</div>
+          </div>
+          <div class="iconBx">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+        </div>
+      </div>
+      <!-- ================ Order Details List ================= -->
+<!-- ================ Masa Details List ================= -->
+      <div class="details">
+        
+        <div class="AdminScreen">
+          <div class="cardHeader">
+            <h2>Masa Bilgilerim</h2>
+            <a href="#" class="btn">View All</a>
+          </div>
+          <table class="text-center">
+            <thead>
+              <tr>
+                <td>Masa Num</td>
+                <td>Masa Kat</td>
+                <td>masa_short_url</td>
+                <td>masa_durum</td>
+                <td>Masa Düzenle</td>
+                <td>Masa Detay</td>
+              </tr>
+            </thead>
+            <tbody> {% for masa in masalar  %} <tr>
+                <td>{{masa.masa_num}}</td>
+                <td>{{masa.masa_kat}}</td>
+                <td>{{masa.masa_short_url}}</td> {% if masa.masa_durum == True %} <td>
+                  <span class="status delivered">Aktif</span>
+                </td> {% endif %} {% if masa.masa_durum == False %} <td>
+                  <span class="status return">Pasif</span>
+                </td> {% endif %} {% comment %} <td class="tableDetail">
+                  <a href={% url 'masa_detay' firma.firma_kod masa.masa_num masa.masa_kat.kat_ad %} class='bx bxs-edit-alt edit'>
+                    </i>
+                </td> {% endcomment %} <td>
+                  <button class="btn btn-primary masa-edit-btn" {% if not request.user.yetkiler.masa_guncelle %}disabled{% endif %} style="color:#3100ff"
+                  data-masa-id ="{{masa.id}}"
+                  data-masa-num="{{ masa.masa_num }}"
+                  data-masa-kat="{{ masa.masa_kat }}" 
+                  data-masa-frm-kod="{{ masa.masa_frm_kod }}"
+                  data-masa-durum ="{{masa.masa_durum}}"
+                  data-masa-kat-id="{{masa.masa_kat.id}}"
+                  ><i class="fas fa-edit icon"></i>
+                </button>
+                </td>
+                <!-- Masa Düzenleme Modalı -->
+                <div class="modal fade" id="masaDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="table_info"></h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" id="btn-close" aria-label="Close"></button>
+                          </div>
+                          <form method="POST" action="{% url "masa_düzenle" firma.firma_kod %}">
+                              {% csrf_token %}
+                              <input type="hidden" name="masa_id" id="masaIdInput">
+                              <div class="modal-body">
+                                  <div class="mb-3">
+                                      <label for="masaNumInput" class="form-label">Masa Numarası</label>
+                                      <input type="text" name="yeni_masa_num" class="form-control" id="masaNumInput">
+                                  </div>
+                                  <div class="mb-3">
+                                      <label for="selectedKat1" class="form-label">Masa Kat</label>
+                                      <select name="yeni_kat_id" class="form-select" id="selectedKat1" aria-label="Default select example">
+                                          <option id="selectedKat" value="" selected></option>
+                                          {% for kat in katlar %}
+                                          <option value="{{ kat.id }}">{{ kat.kat_ad }}</option>
+                                          {% endfor %}
+                                      </select>
+                                  </div>
+                                  <div class="mb-3">
+                                      <label for="masaDurumInput" class="form-label">Masa Durum</label>
+                                      <div class="form-check form-switch">
+                                          <input class="form-check-input" name="yeni_masa_durum" type="checkbox" value="on" role="switch" id="masaDurumInput">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" id="btn-close" data-bs-dismiss="modal">Vazgeç</button>
+                                  <button type="submit" class="btn btn-primary">Kaydet</button>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+                <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    var editButtons = document.querySelectorAll('.masa-edit-btn');
+                    editButtons.forEach(function(button) {
+                      button.addEventListener('click', function() {
+                        var masaId = button.dataset.masaId;
+                        var masaNum = button.dataset.masaNum;
+                        var masaKat = button.dataset.masaKat;
+                        var selectedKatAd = button.dataset.masaKat;
+                        var masaKatId = button.dataset.masaKatId;
+                        var masaDurum = button.dataset.masaDurum;
+                        console.log('Seçilen KAt adı',selectedKatAd);
+                        var modal = new bootstrap.Modal(document.getElementById('masaDüzenleModal'));
+                        var masaDurumInput = document.getElementById('masaDurumInput');
+                        var masaNumInput = document.getElementById('masaNumInput');
+                        var masaIdInput = document.getElementById('masaIdInput');
+                        var selectedKatOption = document.getElementById('selectedKatOption');
+                        var selectedKat = document.getElementById('selectedKat');
+                        var modalTitle = document.getElementById('table_info');
+                        modalTitle.textContent = 'Düzenlenen Masa: ' + masaNum + ' (' + selectedKatAd + ')';
+                        masaDurumInput.checked = masaDurum === 'True'; // Boolean değer checkbox'a atanır
+                        masaNumInput.value = masaNum;
+                        masaIdInput.value = masaId;
+                        selectedKat.textContent = selectedKatAd;
+                        selectedKat.value = masaKatId;
+                        masaDurumInput
+                        modal.show();
+                
+                           // Modal kapatma işlevselliği ekle
+          var closeModalButton = document.querySelector('#btn-close');
+          closeModalButton.addEventListener('click', function() {
+              modal.hide();
+          });
+
+          // Modal dışındaki bir yere tıklandığında da modalı kapat
+          document.addEventListener('click', function(event) {
+              if (event.target === document.querySelector('.modal.fade.show')) {
+                  modal.hide();
+              }
+          });
+                      });
+                    });
+                  });
+                </script>
+                <!--
+  MAsa düzenleme
+-->
+
+
+                <style>
+                  .tableDetail {
+                    text-align: center;
+                  }
+
+                  .edit {
+                    text-decoration: none;
+                    font-weight: bold;
+                    color: black;
+                  }
+                </style>
+                <td>
+                  <a class="btn btn-success" href="{% url 'masa_detay' firma_kod=firma.firma_kod masa_num=masa.masa_num kat_ad=masa.masa_kat.kat_ad %}"><ion-icon name="arrow-redo-outline"></ion-icon></a>
+                  </td>
+              </tr> 
+              {% endfor %} </tbody>
+          </table>
+          
+        </div>
+        
+        
+        <!-- ================= Tanımlar ================ -->
+        {% if yetkiler.tanimlari_listele %}        
+        <div class="adminInfo">
+          <div class="cardHeader">
+            <h2>Tanımlar</h2>
+          </div>
+          <table>
+            {% if yetkiler.konum_ekle %}
+            <tr class="links" data-bs-toggle="modal" data-bs-target="#locationModal">
+              <td width="60px">
+                <div class="imgBx">
+                  <img src="{% static 'project-image/location.png' %}" alt="">
+                </div>
+              </td>
+              
+              <td>
+                <h4>Konum <br>
+                  <span>Konum Ekle</span>
+                </h4>
+              </td>
+            </tr>
+            {% endif %}
+            {% if yetkiler.masa_ekle %}
+            <tr class="links" data-bs-toggle="modal" data-bs-target="#masaForm">
+              <td width="60px">
+                <div class="imgBx">
+                  <img src="{% static 'project-image/table.png' %}" alt="">
+                </div>
+              </td>
+              <td>
+                <h4>Masa <br>
+                  <span>Masa Ekle</span>
+                </h4>
+              </td>
+            </tr>
+{% endif %}
+{% if yetkiler.kategori_ekle %}
+            <tr class="links" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}kategoriEkle">
+              <td width="60px">
+                <div class="imgBx">
+                  <img src="{% static 'project-image/category.png' %}" alt="">
+                </div>
+              </td>
+              <td>
+                <h4>Kategori <br>
+                  <span>Kategori Ekle</span>
+                </h4>
+              </td>
+            </tr>
+{% endif %}
+{% if yetkiler.ürün_ekle %}
+            <tr class="links" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}_urunEkle">
+              <td width="60px">
+                <div class="imgBx">
+                  <img src="{% static 'project-image/product.png' %}" alt="">
+                </div>
+              </td>
+              <td>
+                <h4>Ürün<br>
+                  <span>Ürün Ekle</span>
+                </h4>
+              </td>
+            </tr>
+{% endif %}
+{% if yetkiler.kullanici_ekle %}
+            <tr class="links" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}_userEkle">              
+                <td width="60px">
+                <div class="imgBx">
+                  <img src="{% static 'project-image/user.png' %}"alt="">
+                </div>
+              </td>
+              <td>
+                <h4>Kullanıcı <br>
+                  <span>Kullanıcı Ekle</span>
+                </h4>
+              </td>
+            </tr>
+{% endif %}
+          </table>
+        </div>
+{% endif %}
+        <!-- ================= Tanımlar ================ -->
+        <style>
+          .links {
+            cursor: pointer;
+          }
+        </style>
+        <div class="AdminScreen">
+          <div class="cardHeader">
+            <h2>Masa Konumları</h2>
+            <a href="#" class="btn">View All</a>
+          </div>
+          <table class="konumTable">
+            <style>
+              .konumTable tr,
+              td {
+                text-align: center;
+              }
+            </style>
+            <thead>
+              <tr>
+                <td>Konum Adı</td>
+                <td>Kayıt Eden Kullanici</td>
+                <td>Konum Durumu</td>
+                <td>Konum Düzenle</td>
+              </tr>
+            </thead>
+            <tbody> {% for kat in katlar  %} <tr>
+                <td>{{kat.kat_ad}}</td>
+                <td>{{kat.kat_kayit_user}}</td> {% if kat.kat_durum == True %} <td>
+                  <span class="status delivered">Aktif</span>
+                </td> {% endif %} {% if kat.kat_durum  == False %} <td>
+                  <span class="status return">Pasif</span>
+                </td> {% endif %} <td>
+                 <!-- Button trigger modal -->
+                 <button type="button" 
+                 {% if not request.user.yetkiler.konum_güncelle %}
+                     class="badge bg-danger kat-edit-btn" disabled>
+                     Yetkiniz Yok
+                 {% else %}
+                     class="badge bg-primary kat-edit-btn"
+                     data-kat-id="{{ kat.id }}"
+                     data-kat-ad="{{ kat.kat_ad }}"
+                     data-kat-durum="{{ kat.kat_durum }}">
+                     Düzenle
+                 {% endif %}
+             </button>
+                </td>
+              </tr> {% endfor %} </tbody>
+          </table>
+        </div>
+        <!-- Modal -->
+       
+        <div class="modal fade" id="katDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="katTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form action="{% url "kat_düzenle" firma.firma_kod %}" method="POST">
+                {% csrf_token %}
+              <div class="modal-body">
+                <label for="basic-url" class="form-label">Kat Adı</label>
+                <input type="hidden" id="katIdInput" name="katID" value="">
+                <div class="input-group mb-3">
+                  <input type="text" name="kat_ad" class="form-control"id="katAdInput" aria-describedby="basic-addon3">
+                  
+                </div>
+                <div class="form-text" id="basic-addon4">Eski Kat Adı : {{kat.kat_ad}}</div>
+              
+              <div class="input-group mb-3 ml-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" name="kat_durum" type="checkbox" value="on" id="katDurumInput">
+                <label class="form-check-label" for="katdurum">Kat Durum </label>
+              </div>
+            </div>
+          </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+              </div>
+            </form>
+            </div>
+          </div>
+        </div>
+        {% if yetkiler.kullanicilari_listele %}
+        <!-- ================= Kullanıcılar ================ -->
+        <div class="adminInfo">
+          <div class="cardHeader">
+            <h2>Kullanıcılar</h2>
+          </div>
+          <table class="konumTable">
+            {% for kullanici in firma_kullanicilari %}
+            <tr class='clickable-row' data-href="{% url 'user_detail' firma.firma_kod kullanici.unique_id %}">
+              <style>
+                .clickable-row{
+                  cursor:pointer;
+                }
+              </style>
+              <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                  var clickableRows = document.querySelectorAll(".clickable-row");
+              
+                  clickableRows.forEach(function(row) {
+                    row.addEventListener("click", function() {
+                      var url = this.getAttribute("data-href");
+                      if (url) {
+                        window.location.href = url;
+                      }
+                    });
+                  });
+                });
+              </script>
+              <td width="60px" >
+                <div class="imgBx">
+                  {% if kullanici.user_image %}
+                  
+                  <img src="{{kullanici.user_image.url}}" alt="">
+                  {% else %}
+                  <img src="https://toppng.com/uploads/preview/icons-logos-emojis-user-icon-png-transparent-11563566676e32kbvynug.png" alt="">
+                  {% endif %}
+                </div>
+              </td>
+              
+              <td>
+                <h4><a href="{% url 'user_detail' firma.firma_kod kullanici.unique_id %}">{{ kullanici.username }}</a> <br>
+                  {% if user.user_durum == True %}
+                  <span class="badge text-bg-success">Aktif</span>
+                  {% else %}
+                  <span class="badge text-bg-danger">Pasif</span>
+                  {% endif %}
+                </h4>
+                  <span></span>
+                </h4>
+              </td>
+              
+            </tr>
+            {% endfor %}
+            </tr>
+          </table>
+        </div>
+        {% endif %}
+        {% if permissions.kategorileri_listele or request.user.username == "orqerr" and request.user.user_frm_kod == "-1" %}
+         <!-- ================= Kategoriler ================ -->
+        <!-- Kategori Düzenle Modalı -->
+<!-- Tek bir kategori modal oluştur -->
+<div class="modal fade" id="kategoriDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5"  id="kategoriTitle">Şuanda Düzenlenen Kategori : </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <form action="{% url "kategori_düzenle" firma.firma_kod %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" value="" name="kategori_id" id="kategoriIdInput">
+            <div class="mb-3">
+              <img src="" style="width: 120px; height: 120px;" id="kategoriResimInput" alt="Kategori Resmi">
+            </div>
+            <div class="mb-3">
+              <label for="formFile"  class="form-label">Default file input example</label>
+              <input class="form-control " name="kategori_image" type="file" id="formFile">
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Kategori Kodu</label>
+              <div class="input-group">
+                <input class="form-control" type="text" name="kategori_kodu" id="kategoriKodInput" value="">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Kategori Adı</label>
+              <div class="input-group">
+                <input class="form-control" type="text" name="kategori_adi" id="kategoriAdiInput" value="">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="basic-url" class="form-label">Kategori Durumu</label>
+              <div class="input-group">
+            <input type="checkbox" name="kategori_durum" class="form-check" id="kategoriDurumInput" value="on" >
+          </div>
+        </div>
+          
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tüm düzenleme butonlarını seç
+    var editButtons = document.querySelectorAll('.kategori-edit-btn');
+    
+    // Her bir düzenleme butonu için tıklama olayını dinle
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Tıklanan butonun verilerini al
+            var kategoriId = button.dataset.kategoriId;
+            var kategoriAdi = button.dataset.kategoriAdi;
+            var kategoriDurum = button.dataset.kategoriDurum;
+            var kategoriKod = button.dataset.kategoriKod;
+            var kategoriResim = button.dataset.kategoriResim;
+            // Modal referansı oluştur
+            var modal = new bootstrap.Modal(document.getElementById('kategoriDüzenleModal'));
+            
+            // Input alanlarına verileri yerleştir
+            var kategoriKodInput = document.getElementById('kategoriKodInput');
+            var kategoriIdInput = document.getElementById('kategoriIdInput');
+            var kategoriAdiInput = document.getElementById('kategoriAdiInput');
+            var kategoriDurumInput = document.getElementById('kategoriDurumInput');
+            var kategoriResimInput = document.getElementById('kategoriResimInput');
+            
+            // Kategori adını ve kodunu modal başlığına ekleyin
+            var modalTitle = document.getElementById('kategoriTitle');
+            modalTitle.textContent = 'Şuanda Düzenlenen Kategori: ' + kategoriAdi + ' (' + kategoriKod + ')';
+            
+            kategoriIdInput.value = kategoriId;
+            kategoriAdiInput.value = kategoriAdi;
+            kategoriDurumInput.checked = kategoriDurum === 'True'; // Boolean değer checkbox'a atanır
+            kategoriKodInput.value = kategoriKod;
+            kategoriResimInput.src = kategoriResim;
+            
+            // Modalı göster
+            modal.show();
+        });
+    });
+});
+</script>
+
+
+<!-- Kategoriler Tablosu -->
+<div class="AdminScreen">
+  <div class="cardHeader">
+    <h2>Kategoriler</h2>
+    <a href="#" class="btn">View All</a>
+  </div>
+  <table class="konumTable">
+    <style>
+      .konumTable tr,
+      td {
+        text-align: center;
+      }
+    </style>
+    <thead>
+      <tr>
+        <td>Kategori Resim</td>
+        <td>Kategori Kod</td>
+        <td>Kategori Adı</td>
+        <td>Kategori Durum</td>
+        <td>Kategori Kayıt</td>
+        {% if yetkiler.kategorileri_listele %}
+        <td>Kategori Düzenle</td>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody> 
+
+
+      {% for kategori in kategoriler  %} <tr>
+        <td width="60px">
+          <div class="imgBx">
+            <img src="{{ kategori.kategori_image.url }}" style="width: 60px;" alt="">
+          </div>
+        </td>
+        <td>{{ kategori.kategori_kod }}</td>
+        <td>{{ kategori.kategori_ad }}</td> 
+        {% if kategori.kategori_durum == True %}
+          <td><span class="status delivered">Aktif</span></td> 
+        {% endif %} 
+        {% if kategori.kategori_durum == False %}
+          <td><span class="status return">Pasif</span></td> 
+        {% endif %} 
+        <td>{{ kategori.kategori_kayit_user }}</td>
+        {% if yetkiler.kategorileri_listele %}
+        <td>
+          <button class="btn btn-primary kategori-edit-btn" style="color:#3100ff" data-kategori-resim="{{ kategori.kategori_image.url }}" data-kategori-kod="{{ kategori.kategori_kod }}" data-kategori-durum="{{ kategori.kategori_durum }}" data-kategori-adi="{{ kategori.kategori_ad }}" data-kategori-id="{{ kategori.id }}">
+            <i class="fas fa-edit icon"></i> <!-- Font Awesome edit ikonu -->
+        </button>        
+      </td>
+      <style>
+        .icon{
+          color: white;
+        }
+      </style>
+        {% endif %}
+      </tr> 
+      {% endfor %}
+     </tbody>
+  </table>
+</div>
+        {% endif %}
+
+        {% if yetkiler.ürünleri_listele or request.user.username == "orqerr" and request.user.user_frm_kod == "-1" %}
+        <!-- ================= Ürünler ================ -->
+        <!--
+          ürünleri düzenleme modalı
+        -->
+        <!--
+  ürün edit js
+-->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var editButtons = document.querySelectorAll('.urun-edit-btn');
+    
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var urunId = button.dataset.urunId;
+            var urunAdi = button.dataset.urunAdi;
+            var urunDurum = button.dataset.urunDurum;
+            var urunKategoriId = button.dataset.urunKategoriId;
+            var urunKategoriAd = button.dataset.urunKategoriAd;
+            var urunResim = button.dataset.urunImage
+            var urunFiyat = button.dataset.urunFiyat;
+            console.log('urun kateg',urunResim)
+            var modal = new bootstrap.Modal(document.getElementById('urunDüzenleModal'));
+            
+            // Hedeflenen inputları doğru şekilde almak için id'leri kontrol edelim
+            var urunIdInput = document.getElementById('urunIdInput');
+            var urunFiyatInput = document.getElementById('urunFiyatInput');
+            var urunAdiInput = document.getElementById('urunAdiInput');
+            var urunDurumInput = document.getElementById('urunDurumInput');
+            var selectedKategori = document.getElementById('selectedKategori');
+            var urunResimElement = document.getElementById('urunResimInput');
+            console.log('Urun id input', urunResimInput); // Bu çıktıyı kontrol edin
+            console.log('Urun id input', urunIdInput); // Bu çıktıyı kontrol edin
+            console.log('Urun ad input', urunAdiInput); // Bu çıktıyı kontrol edin
+            console.log('Urun durum input', urunDurumInput); // Bu çıktıyı kontrol edin
+            
+            // Modal başlığını güncelleyin
+            var modalTitle = document.getElementById('urunTitle');
+            modalTitle.textContent = 'Şuanda Düzenlenen Kategori: ' + urunAdi + ' (' + urunId + ')';
+            selectedKategori.text = urunKategoriAd
+            selectedKategori.value = urunKategoriId
+            // Inputlara değerleri atayın
+            urunResimElement.src = urunResim
+            urunFiyatInput.value = urunFiyat;
+            urunIdInput.value = urunId;
+            urunAdiInput.value = urunAdi;
+            urunDurumInput.checked = urunDurum === 'True';
+            
+            // Modalı gösterin
+            modal.show();
+        });
+    });
+});
+  </script>
+  <!-- urun düzenleme-->
+        <div class="modal fade" id="urunDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5"  id="urunTitle">Şuanda Düzenlenen Ürün : </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <form action="{% url "urun_guncelle" firma.firma_kod %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" value="" name="urun_id" id="urunIdInput">
+                    <div class="mb-3 d-flex justify-content-center" style="align-items:center;">
+                      <img src="" style="width: 120px; height: 120px;" id="urunResimInput" alt="Kategori Resmi">
+                    </div>
+                  
+                    <div class="mb-3">
+                      <label for="formFile" class="form-label">Default file input example</label>
+                      <input class="form-control" name="urun_image" type="file" id="formFile">
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Kategori Kodu</label>
+                      <div class="input-group">
+                        <select class="form-select" name="urun_kategori" id="urunKategoriInput">
+                          <option selected id="selectedKategori" value=""></option>
+                          {% for kategori in kategoriler  %}
+                          <option value="{{kategori.id}}">{{kategori.kategori_ad}}</option>
+                          {% endfor %}
+                          
+                        </select>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Ürün Adı</label>
+                      <div class="input-group">
+                        <input class="form-control" type="text" name="urun_adi" id="urunAdiInput" value="">
+                      </div>
+                    </div>
+                      <div class="mb-3">
+                        <label for="basic-url" class="form-label">Ürün Fiyat</label>
+                      <div class="input-group">
+                        
+                        <input class="form-control" type="text" name="urun_fiyat" id="urunFiyatInput" value="">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Ürün Durumu</label>
+                      <div class="input-group">
+                    <input type="checkbox" name="urun_durum" class="form-check" id="urunDurumInput" value="on" >
+                  </div>
+                </div>
+                  
+                
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+              </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="adminInfo">
+          <div class="cardHeader">
+            <h2>Ürünler</h2>
+            <a href="#" class="btn view-all-btn">View All</a>
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const viewAllBtn = document.querySelector('.view-all-btn');
+              if (viewAllBtn) {
+                viewAllBtn.addEventListener('click', () => {
+                  let url = new URL(window.location.href);
+                  url.searchParams.set('view_all', 'true');
+                  window.location.href = url.toString();
+                });
+              }
+            });
+          </script>
+          <table class="konumTable">
+            <style>
+              .konumTable tr,
+              td {
+                text-align: center;
+              }
+            </style>
+            <thead>
+              <tr>
+                <td>Ürün Resim</td>
+                <td>Ürün Adı</td>
+                <td>Ürün Kategori</td>
+                <td>Ürün Durum</td>
+                <td>Ürün Kayıt</td>
+                <td>Ürün Düzenle</td>
+              </tr>
+            </thead>
+            <tbody> {% for urun in urunler  %} <tr>
+                <td width="60px">
+                  <div class="imgBx">
+                    <img src="{{urun.urun_img.url}}" style="width: 60px;" alt="">
+                  </div>
+                </td>
+                <td>{{urun.urun_ad}}</td>
+                <td>{{urun.urun_kategori}}</td> 
+                {% if urun.urun_durum == True %}
+                <td>
+                  <span class="status delivered">Aktif</span>
+                </td>
+                {% endif %}
+                {% if urun.urun_durum  == False %} 
+                <td>
+                  <span class="status return">Pasif</span>
+                </td> 
+                {% endif %} 
+                <td>
+                  {{urun.urun_kayit_user}}</td>
+                <td>
+                  
+                  <button class='btn btn-primary urun-edit-btn'{% if not request.user.yetkiler.urun_guncelle %}disabled{% endif %}
+                  data-urun-id="{{ urun.id }}"
+                  data-urun-adi="{{ urun.urun_ad }}"
+                  data-urun-durum="{{ urun.urun_durum }}"
+                  data-urun-fiyat="{{ urun.urun_fiyat }}"
+                  data-urun-kategori-id="{{urun.urun_kategori.id}}"
+                  data-urun-kategori-ad="{{urun.urun_kategori.kategori_ad}}"
+                  data-urun-image="{{urun.urun_img.url}}"
+                     style='color:#3100ff'>
+                  <i class="fas fa-edit icon"></i></button>
+                  <style>
+                    .icon{
+                      color:white;
+                    }
+                  </style>
+              </td>
+              </tr> {% endfor %} <div class="pagination">
+                <span class="step-links"> {% if urunler.has_previous %} <a href="?page=1">&laquo; first</a>
+                  <a href="?page={{ urunler.previous_page_number }}">previous</a> {% endif %} <span class="current"> Page {{ urunler.number }} of {{ urunler.paginator.num_pages }}. </span> {% if urunler.has_next %} <a href="?page={{ urunler.next_page_number }}">next</a>
+                  <a href="?page={{ urunler.paginator.num_pages }}">last &raquo;</a> {% endif %} </span>
+              </div>
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+        {% if firma.firma_kod == "1" %}
+        {% if request.user.username == "orqerr" and request.user.user_frm_kod == "-1" %}
+        <div class="AdminScreen">
+          <div class="cardHeader">
+            <h2>Firmalar</h2>
+            <a href="#" class="btn">View All</a>
+          </div>
+          <table class="text-center">
+            <thead>
+              <tr>
+                <td>Firma Kodu</td>
+                <td>Firma Adı</td>
+                <td>Firma Telefonu</td>
+                <td>Anl. Bitiş Tarihi</td>
+                <td>Firma Durum</td>
+                <td>Firma Sayfası</td>
+              </tr>
+            </thead>
+            <tbody> {% for firma in firmalar  %} <tr>
+                <td>{{firma.firma_kod}}</td>
+                <td>{{firma.firma_adi}}</td>
+                <td>{{firma.firma_telefon}}</td> 
+                <td>{{firma.firma_bit_tar|date:"d F Y" }}</td>
+                <td>
+                  {% if firma.firma_durum == True %}
+                  <span class="badge rounded-pill text-bg-success">Aktif</span>
+                  {% else %}
+                  <span class="badge rounded-pill text-bg-danger">Pasif</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a class="btn btn-primary" href="{% url 'admin_dashboard' firma.firma_kod %}">
+                    <i class="fa-solid fa-circle-right icon-detail"></i>
+                  </a>
+              </td>
+                <td> 
+                <style>
+                  .icon-detail{
+                    color:white;
+                  }
+                  .tableDetail {
+                    text-align: center;
+                  }
+
+                  .edit {
+                    text-decoration: none;
+                    font-weight: bold;
+                    color: black;
+                  }
+                </style>
+                <td>
+                  {% comment %} <a class="btn btn-success" href="{% url 'masa_detay' firma_kod=firma.firma_kod masa_num=masa.masa_num kat_ad=masa.masa_kat.kat_ad %}"><ion-icon name="arrow-redo-outline"></ion-icon></a> {% endcomment %}
+                  </td>
+              </tr> 
+              {% endfor %} 
+            </tbody>
+          </table>
+          
+        </div>
+        {% endif %}
+        {% endif %}
+        
+      </div>
+    </div>
+
+ 
+    <!--
+  MASA MODELİ
+-->
+<!-- =========== Kullanıcı Ekleme Modalı =========  -->
+<div class="modal fade" id="{{firma.firma_kod}}_userEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Kullanıcı Ekle</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'user_ekle' firma.firma_kod %}" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı (Sisteme giriş için kullanılacak)</label>
+                        <input type="text" name="username" class="form-control" id="username" aria-describedby="usernameHelp">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Kullanıcı Parolası</label>
+                        <input type="password" name="password" class="form-control" id="password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_adi" class="form-label">Personel Adı</label>
+                        <input type="text" name="user_adi" class="form-control" id="user_adi">
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_soyad" class="form-label">Personel Soyadı</label>
+                        <input type="text" name="user_soyad" class="form-control" id="user_soyad">
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_durum" class="form-label">Kullanıcı Durumu (Aktif / Pasif)</label>
+                        <input type="checkbox" name="user_durum" class="form-check-input" id="user_durum">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- =========== Kullanıcı Ekleme Modalı =========  -->
+    <!-- Modal -->
+    <div class="modal fade" id="update_table_{{masa.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"> ... </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- =========== Kat Form =========  -->
+    <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Konum Ekle</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url "kat_ekle" firma.firma_kod %}" method="POST"> {% csrf_token %} 
+              <div class="mb-3">
+                <label for="basic-url" class="form-label">Konum Adı : </label>
+                <div class="input-group">
+                  <input type="text" name="kat_ad" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+                <div class="form-text" id="basic-addon4">Masaların bulunduğu konum adını giriniz.(Bahçe / Teras)</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" name="kat_durum" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Konum Durumu (Pasif / Aktif)</label>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- =========== Masa Ekleme Modalı =========  -->
+    <div class="modal fade" id="masaForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="masaEkleModal">Masa Ekle</h1>
+            <h5 class="modal-title" id="exampleModalLabel">{{firma.firma_adi}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{% url 'masa_ekle' firma.firma_kod %}"> {% csrf_token %} <div class="input-group mb-3">
+                <label for="basic-url" class="form-label">Masa numarası veya adını giriniz...</label>
+                <div class="input-group">
+                  <input name="masa_num" type="text" class="form-control" placeholder="Masa numarası" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+              </div>
+              <label for="basic-url" class="form-label">Masa konumunu giriniz.</label>
+              <select class="form-select" name="masa_kat">
+                {% for kat in katlar %}
+                    {% if kat.kat_durum == 1 %}
+                        <option value="{{ kat.id }}">{{ kat.kat_ad }}</option>
+                    {% endif %} 
+                {% endfor %}
+            </select>              <div class="form-check mt-3">
+                <input type="checkbox" class="form-check-input" id="checkbox_id" name="masa_durum" value="value">
+                <label class="form-check-label" for="checkbox_id">Masa Durumu</label>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button type="submit" class="btn btn-success">Kaydet <i class="fa-solid fa-circle-check"></i></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- =========== Masa Ekleme Modalı Sonu =========  -->
+<!-- =========== Kategori Ekleme Modalı =========  -->
+    <div class="modal fade" id="{{firma.firma_kod}}kategoriEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Kategori Ekle</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'kategori_ekle' firma.firma_kod %}" enctype="multipart/form-data" method="POST"> {% csrf_token %}
+              <div class="mb-3">
+                <label for="category_code" class="form-label">Kategori Kod : </label>
+                <div class="input-group">
+                  <input type="text" class="form-control" name="kategori_kod" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="category_name" class="form-label">Kategori Ad : </label>
+                <div class="input-group">
+                  <input type="text" class="form-control" name="kategori_ad" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="category_image" class="form-label">Kategori Resmi : </label>
+                <div class="input-group">
+                  <input type="file" class="form-control" name="kategori_image" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+              </div>
+              <div class="mb-3">
+
+                <div class="input-group">
+                  <div class="form-check form-switch">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Kategori Durumu</label>
+                    <input class="form-check-input" name="kategori_durum" type="checkbox" value="on" role="switch" id="flexSwitchCheckDefault">
+                    
+                  </div>
+                </div>
+              </div>                           
+             
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark"></i></button>
+            <button type="submit" class="btn btn-success"><i class="fa-solid fa-circle-check"></i> Kaydet</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- =========== Kategori Ekleme Modalı =========  -->
+<!-- =========== Ürün Ekleme Modalı =========  -->  
+    <div class="modal fade" id="{{firma.firma_kod}}_urunEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Ürün Ekle</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'urun_ekle' firma.firma_kod %}" enctype="multipart/form-data" method="POST"> {% csrf_token %} <div class="mb-3">
+                <label for="basic-url" class="form-label">Ürün Adı</label>
+                <div class="input-group">
+                  <input type="text" name="urun_ad" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="basic-url" class="form-label">Ürün Kategorisi Seçin</label>
+                <div class="input-group">
+                  <select class="form-select" name="urun_kategori" aria-label="Default select example"> 
+                    {% for kategori in kategoriler  %}
+                     <option value="{{kategori.id}}">{{kategori.kategori_ad}}</option>
+                      {% endfor %} 
+                    </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="formFile" class="form-label">Ürün Fotoğrafı Seçin</label>
+                <input class="form-control" name="urun_img" type="file" id="formFile">
+              </div>
+              <div class="mb-3">
+                <label for="basic-url" class="form-label">Ürün Fiyatı Giriniz.</label>
+                <div class="input-group">
+                  <input type="text" name="urun_fiyat" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="basic-url" class="form-label">Kayıt Eden Kullanıcı</label>
+                <div class="input-group">
+                  <input type="text" value={{request.user.username}} class="form-control" readonly>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button type="submit" class="btn btn-success">Ürün Ekle <i class="fa-regular fa-circle-check"></i></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- =========== Ürün Ekleme Modalı =========  -->  
+    <div class="modal fade" id="firmaEkleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Firma Ekle</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-6">
+                  <form action="{% url 'firma_ekle' %}"method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Kodu : </label>
+                      <div class="input-group">
+                        <input type="text"  class="form-control" id="basic-url" placeholder="Sistem Tarafından Otomatik Verilir." disabled aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Adı : </label>
+                      <div class="input-group">
+                        <input type="text" name="firma_adi" class="form-control" id="basic-url" placeholder="Firma Adını Giriniz." readonlys aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Adres : </label>
+                      <div class="input-group">
+                        <input type="text" name="firma_adres" class="form-control" id="basic-url" placeholder="Firma Adresini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Telefon : </label>
+                      <div class="input-group">
+                        <input type="text" name="firma_telefon" class="form-control" id="basic-url" placeholder="Firma Telefonu Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Telefon_2 : </label>
+                      <div class="input-group">
+                        <input type="text" name="firma_telefon2" class="form-control" id="basic-url" placeholder="Firma Telefonu Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="basic-url" class="form-label">Firma Şehir : </label>
+                      <div class="input-group">
+                        <input type="text" name="firma_sehir" class="form-control" id="basic-url" placeholder="Firma Şehrini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                      </div>
+                    </div>
+                   
+                    
+                    
+                    
+                </div>
+                
+               <div class="col-6">
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma İlçe : </label>
+                  <div class="input-group">
+                    <input type="text" name="firma_ilce" class="form-control" id="basic-url" placeholder="Firma İlçesini Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma Ünvan : </label>
+                  <div class="input-group">
+                    <input type="text" name="firma_ünvan"class="form-control" id="basic-url" placeholder="Firma Ünvanını Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma Dış Ip : </label>
+                  <div class="input-group">
+                    <input type="text" name="firma_dis_ip" class="form-control" id="basic-url" placeholder="Firma Dış ip adresini giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma Durum (Aktif / Pasif) : </label>
+                  <div class="input-group">
+                    <input type="checkbox" name="firma_durum" class="form-check" id="basic-url" placeholder="Firma Adını Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma Anlaşma Başlama Tarihi : </label>
+                  <div class="input-group">
+                    <input type="date" name="firma_bas_tar" class="form-control" id="basic-url" placeholder="Firma Anlaşma Başlama Tarihi Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="basic-url" class="form-label">Firma Anlaşma Bitiş Tarihi : </label>
+                  <div class="input-group">
+                    <input type="date" name="firma_bit_tar" class="form-control" id="basic-url" placeholder="Firma Anlaşma Bitiş Tarihi Giriniz." aria-describedby="basic-addon3 basic-addon4">
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+           
+           </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Firmayı Kaydet</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if request.user.user_frm_kod == "-1" %}
+    <!-- Firma Düzenleme Modalı -->
+    <div class="modal fade" id="firmaDüzenle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Şuanda Düzenlenen Firma <<<{{firma.firma_kod}}>>></h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url "firma_düzenle" firma.pk firma.firma_kod %}" method="POST">
+              {% csrf_token %}
+            <!-- Firma Kodu -->
+            <label for="basic-url" class="form-label">Firma Kodu (Değiştirilemez)</label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_kodu" placeholder="Firma Kodu" value={{firma.firma_kod}} disabled>
+            </div>
+             <!-- Firma Adı -->
+            <label for="basic-url" class="form-label">Firma Adı</label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_adi" placeholder="Firma Adı" value={{firma.firma_adi}}>
+            </div>
+            <!-- Firma Adres -->
+            <label for="basic-url" class="form-label">Firma Adres</label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_adres" placeholder="Firma Adres" value={{firma.firma_adres}}>
+            </div>
+            <!-- Firma Telefon -->
+            <label for="basic-url" class="form-label">Firma Telefon</label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_telefon" placeholder="Firma Telefon" value={{firma.firma_telefon}}>
+            </div>
+            <!-- Firma Telefon2 -->
+            <label for="basic-url" class="form-label">Firma Telefon 2 </label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control"name="firma_telefon2" placeholder="Firma Telefon 2" value={{firma.firma_telefon2}}>
+            </div>
+            <!-- Firma Şehir -->
+            <label for="basic-url" class="form-label">Firma Şehir </label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_sehir" placeholder="Firma Şehir" value={{firma.firma_sehir}}>
+            </div>
+            <!-- Firma İlçe -->
+            <label for="basic-url" class="form-label">Firma İlçe </label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_ilce" placeholder="Firma İlçe" value={{firma.firma_ilce}}>
+            </div>
+            <!-- Firma Ünvan -->
+            <label for="basic-url" class="form-label">Firma Ünvan </label>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="firma_ünvan" placeholder="Firma Ünvan" value={{firma.firma_ünvan}}>
+            </div>
+             <!-- Firma Dış İp -->
+             <label for="basic-url" class="form-label">Firma İp Adresi </label>
+             <div class="input-group mb-3">
+               <input type="text" class="form-control" name="firma_dis_ip" placeholder="Firma İp Adresi" value={{firma.firma_dis_ip}}>
+             </div>
+             <!-- Firma Durumu -->
+             <label for="basic-url" class="form-label">Firma Durumu</label>
+             <div class="input-group mb-3">
+               <input type="text" class="form-control" name="firma_durum" placeholder="Firma İp Adresi" value={{firma.firma_durum}}>
+             </div>
+             <!-- Firma Anlaşma Başlama Tarihi -->
+             <label for="basic-url" class="form-label">Firma Anlaşma Başlama Tarihi</label>
+             <div class="input-group mb-3">
+              <input type="date" class="form-control" name="firma_bas_tar" placeholder="Firma Anlaşma Başlama Tarihi" value="{{ firma.firma_bas_tar|date:'Y-m-d' }}" disabled>
+            </div>
+             <!-- Firma Anlaşma Bitiş Tarihi -->
+             <label for="basic-url" class="form-label">Firma Anlaşma Bitiş Tarihi</label>
+             <div class="input-group mb-3">
+              <input type="date" class="form-control"name="firma_bit_tar" placeholder="Firma Anlaşma Bitiş Tarihi" value="{{ firma.firma_bit_tar|date:'Y-m-d' }}">
+            </div>
+              <!-- Firmayı Oluşturan Kullanıcı -->
+              <label for="basic-url" class="form-label">Firmayı Oluşturan Kullanıcı</label>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" name="firma_create_user" placeholder="Firmayı Oluşturan Kullanıcı" value={{firma.firma_create_user}} disabled>
+              </div>
+              <!-- Firma Oluşturulma Zamanı -->
+              <label for="basic-url" class="form-label">Firma Oluşturulma Zamanı</label>
+              <div class="input-group mb-3">
+                <input type="date" class="form-control" name="firma_create_time" placeholder="Firma Oluşturulma Zamanı" value="{{ firma.firma_create_time|date:'Y-m-d' }}" disabled>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <!-- Firma Düzenleme Modalı -->
+      <!-- Firma Ekle Modalı -->
+ <!-- Modal -->
+
+<!-- =========== Ürün Ekleme Modalı =========  -->
+
+ <!-- ===============================  -->
+ <!-- ===============================  -->
+ <!-- ===============================  -->
+ <!-- ===============================  -->
+ <!-- ===============================  -->
+<!-- =========== Kullanıcı Ekleme Modalı =========  -->
+<div class="modal fade" id="{{firma.firma_kod}}_userEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'urun_ekle' firma.firma_kod %}" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="basic-url" class="form-label">Ürün Adı</label>
+                        <div class="input-group">
+                            <input type="text" name="urun_ad" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="basic-url" class="form-label">Ürün Kategorisi Seçin</label>
+                        <div class="input-group">
+                            <select class="form-select" name="urun_kategori" aria-label="Default select example">
+                                {% for kategori in kategoriler %}
+                                    <option value="{{kategori.id}}">{{kategori.kategori_ad}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">Ürün Fotoğrafı Seçin</label>
+                        <input class="form-control" name="urun_img" type="file" id="formFile">
+                    </div>
+                    <div class="mb-3">
+                        <label for="basic-url" class="form-label">Ürün Fiyatı Giriniz.</label>
+                        <div class="input-group">
+                            <input type="text" name="urun_fiyat" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="basic-url" class="form-label">Kayıt Eden Kullanıcı</label>
+                        <div class="input-group">
+                            <input type="text" value="{{request.user.username}}" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="basic-url" class="form-label">Kayıt Saati :</label>
+                        <div class="input-group">
+                            <input type="datetime-local" value="{% localtime on %}{{ datetime_now|date:'Y-m-d' }}T{{ datetime_now|time:'H:i' }}{% endlocaltime %}" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Hata Kodları : </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>UGYY:001</strong> Ürün güncelleme sırasında bu kod ile karşılaştıysanız. Ürün güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
+            Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="{% url 'hata_bildir' kod='UGYY:001' %}">bildirin.</a> 
+          </li>
+          <li class="list-group-item">
+            <strong>KGYY:001</strong> Kullanıcı güncelleme sırasında bu kod ile karşılaştıysanız. Kullanıcı güncelleme yetkiniz <strong>bulunmamaktadır.</strong>
+            Başka Bir alanda bu hata ile karşılaştıysanız lütfen <a href="{% url 'hata_bildir' kod='KGYY:001' %}">bildirin.</a> 
+          </li>
+          <!-- Diğer öğeler buraya eklenebilir -->
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<!-- =========== Kullanıcı Ekleme Modalı =========  -->
+ <!-- JavaScript ile modalı otomatik olarak açma -->
+
+      <!-- ====== ionicons ======= -->
+      <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+      <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+      <!-- Bootstrap JS (Optional if you need modal functionality) -->
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-Lnhgo2pc3sLpaQXrBtkbzs3KvHiDtO1Fb9+y4U1BeoYGdmF1zQPJci8Y5A/KlIW4" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-ckHjPhxgq3W1Qeoi4GZfzlfdzF+7MXBxU7qE3L8HlFWhP0+2zUm0e9uY0RFyow3C" crossorigin="anonymous"></script>
+  
+  
+  
+  
+    </body>
+</html> {% endblock content %}

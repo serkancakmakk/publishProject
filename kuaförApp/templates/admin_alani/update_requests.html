@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block content %}
+{% if messages %} {% for message in messages  %} <div class="d-none">
+  {{message}}
+</div> {% endfor %} {% endif %}
+{% if messages %}
+{% for message in messages %}
+    <script>
+        var title = "";
+        {% if message.tags == 'success' %}
+            title = "İşlem Başarılı";
+        {% elif message.tags == 'error' %}
+            title = "Hata!";
+        {% endif %}
+        
+        Swal.fire({
+            position: "top-end",
+            icon: "{{ message.tags }}",
+            text: "{{ message }}",
+            title: title,
+            showConfirmButton: false,
+            timer: 3000
+        });
+    </script>
+{% endfor %}
+{% endif %}
+{% if requests %}
+<div class="container mt-4">
+    <h2>Güncelleme Talepleri</h2>
+  
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        {% for request in requests %}
+        <div class="col">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Şirket Kodu: <a href="{% url "admin_dashboard" request.req_company_code %}">{{ request.req_company_code }}</a></h5>
+                    <p class="card-text"><strong>Talep Eden Kullanıcı:</strong> {{ request.req_user }}</p>
+                    <p class="card-text"><strong>Talep Tarihi:</strong> {{ request.created_at|date:"d.m.Y H:i:s" }}</p>
+                    <p class="card-text"><strong>Talep Durumu:</strong>
+                        {% if request.is_active == False %}
+                        <span class="badge text-bg-danger">
+                            <i class="fa-solid fa-circle"></i> Kapalı
+                          </span>
+                        {% else %}
+                        <span class="badge text-bg-success">
+                            <i class="fa-solid fa-circle"></i> Açık
+                          </span>
+                        {% endif %}</p>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                    <a href="#" class="btn btn-primary" onclick="toggleDetails({{ request.id }})">Detayları Göster/Gizle</a>
+                    <form method="POST"action="{% url "güncelleme_talebini_kapat" request.req_company_code %}">
+                      {% csrf_token %}
+                    <button type="submit"class="btn btn-danger ml-4">Kapat</button>
+                  </form>
+                    <style>
+                        .btn-group{
+                            display: block !important;
+                        }
+                    </style>
+                        </div>
+                    <div id="details{{ request.id }}" style="display: none;">
+                        <hr>
+                        <ul class="list-group list-group-flush">
+                           
+                            <li class="list-group-item"><strong>Şirket Kodu:</strong>
+                                {% if request.company_code == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            
+                            <li class="list-group-item"><strong>Şirket Adı:</strong>
+                                {% if request.company_name == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Adresi:</strong>
+                            {% if request.company_address == True %}
+                            <span class="badge text-bg-success">
+                                <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                              </span>
+                            {% else %}
+                            <span class="badge text-bg-danger">
+                                <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                              </span>
+                            {%endif%}  
+                             </li>
+                            <li class="list-group-item"><strong>Şirket Telefonu:</strong>
+                                {% if request.company_phone == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Şehir:</strong>
+                                {% if request.company_city == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket İlçe:</strong>
+                                {% if request.company_district == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Ünvan:</strong>
+                                {% if request.company_title == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Dış IP:</strong>
+                                {% if request.company_external_ip == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Durumu:</strong>
+                                {% if request.company_status == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                            <li class="list-group-item"><strong>Şirket Anlaşma Bitiş Tarihi:</strong>
+                                {% if request.company_agreement_expiry_date == True %}
+                                <span class="badge text-bg-success">
+                                    <i class="fa-solid fa-circle"></i> İstek Yapıldı
+                                  </span>
+                                {% else %}
+                                <span class="badge text-bg-danger">
+                                    <i class="fa-regular fa-circle-xmark"></i> İstek Yapılmadı
+                                  </span>
+                                {%endif%}  
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div id="loader-container">
+      <div class="loader"></div>
+  </div>
+  <style>
+    .completed_requests_modal_strong{
+      color:red;
+    }
+  </style>
+  <div id="completed-message">
+      <h1>Tamamlanan talepler otomatik olarak silinmiştir.</h1>
+      <h6>Şuanda bekleyen talep yok <a data-bs-toggle="modal" data-bs-target="#exampleModal"><strong class="completed_requests_modal_strong">Tamamlanan Taleplere Bak</strong></a></h6>
+  </div>
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">request.pk</th>
+                <th scope="col">Şirket</th>
+                <th scope="col">Güncelleme Tarihi</th>
+                <th scope="col">Güncellemeyi Alan Kullanıcı</th>
+                <th scope="col">Geri Al</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for request in completed_requests  %}
+              
+              <tr>
+                <th scope="row">{{request.pk}}</th>
+                <td>{{request.req_company_code}}</td>
+                <td>{{ request.created_at|date:"d.m.Y H:i:s" }}</td>
+                <td>@{{request.pk}}</td>
+                <td>
+                  <form method="POST" action="{% url "güncelleme_talebini_geri_al" request.req_company_code %}">
+                    {% csrf_token %}
+                    <button class="btn btn-warning" type="submit">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                  </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<style>
+  #completed-message {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+    color: green;
+}
+  #loader-container {
+    
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Loader'ın diğer içeriklerin üstünde olmasını sağlayın */
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Beyaz halka */
+    border-top: 16px solid #008000; /* Mavi halka */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite; /* Dönme animasyonunu ekleyin */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+    {% endif %}
+</div>
+<script>
+    function toggleDetails(id) {
+        var detailsDiv = document.getElementById('details' + id);
+        if (detailsDiv.style.display === 'none') {
+            detailsDiv.style.display = 'block';
+        } else {
+            detailsDiv.style.display = 'none';
+        }
+    }
+</script>
+{% endblock content %}

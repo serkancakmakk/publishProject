@@ -1,0 +1,704 @@
+{% extends "base.html" %}
+{% block content %}
+{% block title %}
+<title>Firma Detay | {{firma.firma_kod}}</title>
+{% endblock title %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+    .false{
+        color:red;
+        font-size: 24px;
+    }
+    .true{
+        color:green;
+        font-size: 24px;
+    }
+    .firma{
+        font-family: "Roboto", sans-serif;
+    }
+</style>
+
+<div class="container">
+  {% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %} alert-dismissible fade show text-center" role="alert">
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <strong>{{ message }}</strong>
+    </div>
+  {% endfor %}
+{% endif %}
+    <div class="row">
+        <style>
+            .list-group-item:hover{
+                background-color:#A8CD9F;
+            }
+            .admin{
+              color:red;
+            }
+        </style>
+        <div class="col-4">
+            <div class="card" style="width: 18rem;">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item"><strong class="firma">
+                    
+                    {% if request.user.user_frm_kod == '-1' %}
+                    <i class='bx bxs-user-circle admin'></i>
+                    {{request.user.username}}
+                    {% endif %}
+                  </strong>
+                </li>
+                  <li class="list-group-item"><strong class="firma">{{firma.id}}</strong></li>
+                  <li class="list-group-item"><strong class="firma" >#{{firma.firma_kod}}</strong></li>
+                  <li class="list-group-item"><strong class="firma">Firma Adı : </strong>{{firma.firma_adi}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Adres : </strong>{{firma.firma_adres}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Telefon : </strong>{{firma.firma_telefon}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Telefon 2 : </strong>{{firma.firma_telefon2}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma İl/İlçe : </strong>{{firma.firma_sehir}}/{{firma.firma_ilce}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Ünvan : </strong>{{firma.firma_ünvan}}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Dış İp : </strong>{{firma.firma_dis_ip}}</li>
+                  {% if firma.firma_durum == True %}
+                  <li class="list-group-item"><strong class="firma">Firma Durum : </strong><i class='bx bxs-badge-check true'></i></li>
+                  {% else %}
+                  <li class="list-group-item"><strong class="firma">Firma Durum : </strong><i class='bx bxs-x-square false'></i></li>
+                  {% endif %}
+                  <li class="list-group-item"><strong class="firma">Firma Başlama Tarihi : </strong>{{ firma.firma_bas_tar|date:"d F Y" }}</li>
+                  <li class="list-group-item"><strong class="firma">Firma Bitiş Tarihi : </strong>{{ firma.firma_bit_tar|date:"d F Y" }}</li>
+                  <li class="list-group-item">
+                    <div class="d-grid gap-2 d-md-block">
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}katForm" type="button">Konum Ekle</button>
+                      <div class="modal fade" id="{{firma.firma_kod}}katForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <form action="{% url "kat_ekle" firma.firma_kod %}"method="POST">
+                                {% csrf_token %}
+                              {{katForm.as_p}}
+                            
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                          </form>
+                          </div>
+                        </div>
+                      </div>
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}masaForm" type="button">Masa Ekle</button>
+                    </div>
+                    <!-- Modal -->
+<div class="modal fade" id="{{firma.firma_kod}}masaForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{firma.firma_adi}}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'masa_ekle' firma.firma_kod %}">
+          {% csrf_token %}
+          <div class="input-group mb-3">
+            <label for="basic-url" class="form-label">Masa numarası veya adını giriniz...</label>
+            <div class="input-group">
+            <input name="masa_num" type="text" class="form-control" placeholder="Masa numarası" aria-label="Username" aria-describedby="basic-addon1">
+          </div>
+          </div>
+          <select  class="form-select" name="masa_kat">
+            {% for kat in katlar %}
+                <option value="{{ kat.id }}">{{ kat.kat_ad }}</option>
+            {% endfor %}
+        </select>
+        
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+        </form>
+    </div>
+  </div>
+</div>
+                  </li>  
+                  <li class="list-group-item">
+                    <div class="d-grid gap-2 d-md-block">
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tumMasalar"  type="button">Masaları Gör</button>
+                      <button class="btn btn-primary"data-bs-toggle="modal" data-bs-target="#tumKatlar" tumKat type="button">Katları Gör</button>
+                    </div>
+                  </li>
+                  <!--
+                    Ürün ve kategori ekleme buton grubu
+                  -->     
+                  <li class="list-group-item">
+                    <div class="d-grid gap-2 d-md-block">
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kategoriEkle"  type="button">Kategori Ekle</button>
+                      <button class="btn btn-primary"data-bs-toggle="modal" data-bs-target="#urunEkle"  type="button">Ürün Ekle</button>
+                    </div>
+                  </li>
+                  <!--
+                    Ürün ve kategori ekleme buton grubu
+                  -->
+                  <li class="list-group-item">
+                    <div class="d-grid gap-2 d-md-block">
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kategoriler"  type="button">Kategoriler</button>
+                      <button class="btn btn-primary"data-bs-toggle="modal" data-bs-target="#urunler"  type="button">Ürünler</button>
+                    </div>
+                  </li>               
+                  <li class="list-group-item">
+{% if request.user.user_frm_kod == '-1' and request.user.username == 'orqerr' %}            <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{{firma.firma_kod}}infoForm">
+  Firma Bilgilerini Güncelle
+</button>
+
+<!-- Modal -->
+
+<div class="modal fade" id="{{firma.firma_kod}}infoForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{firma.firma_adi}}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="basic-url" class="form-label">Firma Adı : </label>
+        <div class="input-group">
+          <input type="text" name="firma_adi" value="{{firma.firma_adi}}" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+        <label for="basic-url" class="form-label">Firma Ünvan : </label>
+        <div class="input-group">
+          <input type="text" name="firma_ünvan" value={{firma.firma_ünvan}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Adres : </label>
+        <div class="input-group">
+          <input type="text" name="firma_adres" value={{firma.firma_adres}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Telefon : </label>
+        <div class="input-group">
+          <input type="text" name="firma_telefon" value={{firma.firma_telefon}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Telefon 2 : </label>
+        <div class="input-group">
+          <input type="text" name="firma_telefon2" value={{firma.firma_telefon2}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Şehir : </label>
+        <div class="input-group">
+          <input type="text" name="firma_sehir" value={{firma.firma_sehir}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma İlçe : </label>
+        <div class="input-group">
+          <input type="text" name="firma_ilce" value={{firma.firma_ilce}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Dış İp : </label>
+        <div class="input-group">
+          <input type="text" name="firma_dis_ip"value={{firma.firma_dis_ip}} class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Durum:</label>
+        <div class="input-group">
+          <input type="checkbox" name="firma_durum" class="form-check" id="basic-url" aria-describedby="basic-addon3"
+                {% if firma.firma_durum %} checked {% endif %}>
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Başlangıç Tarihi : </label>
+        <div class="input-group">
+          <input type="text" name="firma_bas_tar" value="{{ firma.firma_bas_tar|date:'Y-m-d' }}" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+
+        <label for="basic-url" class="form-label">Firma Bitiş Tarihi : </label>
+        <div class="input-group">
+          <input type="text" name="firma_bit_tar" value="{{ firma.firma_bit_tar|date:'Y-m-d' }}" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+                  </li>
+                </ul>
+              </div>
+            <hr>
+            Firma Kullanıcıları
+                {% for kullanici in firma_kullanicilari %}
+                <li>{{ kullanici.user_adi }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="col-8">
+           Kullanıcı Oluşturma Ekranı
+           <form action="{% url "user_ekle" firma.firma_kod %}" method="POST">
+            {% csrf_token %}
+           
+           <div class="mb-3">
+            <label for="basic-url" class="form-label">Kullanıcı Firması : </label>
+            <div class="input-group">
+              <input name="user_frm_kod" value="{{firma.firma_kod}}-{{firma.firma_adi}}" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4" disabled readonly>
+            <input name="user_frm_kod"type="hidden" value={{firma.firma_kod}}>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="basic-url" class="form-label">Kullanıcı Username : </label>
+            <div class="input-group">
+              <input name="username" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="basic-url" class="form-label">Kullanıcı Parolası : </label>
+            <div class="input-group">
+              <input name="password" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="basic-url" class="form-label">Kullanıcı Adı & Soyadı : </label>
+            <div class="input-group mb-3">
+                <input name="user_adi" type="text"class="form-control" placeholder="Ad" aria-label="Username">
+                <span class="input-group-text">&</span>
+                <input name="user_soyad" type="text" class="form-control" placeholder="Soyad" aria-label="Server">
+              </div>
+        </div>
+        <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text" id="basic-addon3">Kayıt Yetkisi</span>
+              <input name="user_kayit_yetki" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+              <span class="input-group-text" id="basic-addon3">Sil Yetkisi</span>
+              <input name="user_sil_yetki" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+              <input name="user_durum" type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">
+                <label class="btn btn-outline-success" for="btncheck1">Durum</label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="basic-url" class="form-label">Kayıt Yapan Kullanıcı : </label>
+            <div class="input-group">
+              <input name="user_kayit_user" type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+            </div>
+        </div>
+        <button class="btn btn-success" type="submit">Kaydet</button>
+    </form>
+    </div>
+</div>
+
+<!--
+  MASA MODELİ
+-->
+<div class="modal fade" id="tumMasalar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-striped text-center">
+          <thead>
+            <tr>
+              <th scope="col">id</th>
+              <th scope="col">Masa Numarası</th>
+              <th scope="col">Yeni Masa Numarası</th>
+              <th scope="col">Masa Kat</th>
+              <th scope="col">Yeni Masa Katı</th>
+              <th scope="col">Masa Durum</th>
+              {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+              <th scope="col">Masa Firma</Fieldset></th>
+              <th scope="col">Masa Kayıt Tarihi</th>
+              <th scope="col">Masa Kayıt Kullanıcı</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+           
+            
+            {% for masa in masalar  %}
+            
+            <tr>
+              <th scope="row">
+              {% comment %} <img src="{{masa.masa_qr_code.url}}" alt="">   {% endcomment %}
+              </th>
+              <td>{{masa.masa_num}}</td>
+              <form action="{% url 'masa_düzenle' firma.firma_kod masa.id %}" method="POST">
+                {% csrf_token %}
+              <td> <!-- Yeni Masa Numarası -->
+                <input class="form-control" type="text" name="yeni_masa_num">
+              </td>
+              <td>{{masa.masa_kat}}</td>
+              <td> <!-- Yeni Masa Katı -->
+                <select class="form-select" name="masa_kat" id="id_masa_kat">
+                  {% for kat in katlar %}
+                      <option value="{{ kat.pk }}" {% if kat.pk == form.masa_kat.value %} selected {% endif %}>{{ kat.kat_ad }}</option>
+                  {% endfor %}
+              </select>
+              
+              </td>
+              <td>
+                <input  name="masa_durum" class="form-check" type="checkbox" value="on" {% if masa.masa_durum %} checked {% endif %}>
+            </td>
+           
+         
+          </form>
+              {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+              <td>{{masa.masa_firma.firma_adi}}</td>
+              <td>{{ masa.masa_kayit_tar|date:"Y-m-d H:i:s" }}</td>
+              <td>{{masa.masa_kayit_user}}</td>
+              <td> <!-- Masa Güncelle Butonu -->
+                <a class="btn btn-success" href="{% url 'masa_detay' firma_kod=firma.firma_kod masa_num=masa.masa_num kat_ad=masa.masa_kat.kat_ad %}">Yeni Qr Short Url Oluştur</a>
+              </td>
+              <td> <!-- Masa Güncelle Butonu -->
+                <button class="btn btn-success" type="submit">Güncelle</button>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  qr ve short url modalı
+-->
+<div class="modal fade" id="{{masa.masa_num}}_qrModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+  KAT MODELİ
+-->
+<div class="modal fade" id="tumKatlar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog  modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table text-center">
+          <thead>
+            <tr>
+              <th scope="col">id</th>
+              <th scope="col">Kat Adı</th>
+              <th scope="col">Kat Durum</th>
+              <th scope="col">Yeni Kat Adı</th>
+              
+              <th scope="col">Güncelle</th>
+              {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+              <th scope="col">Kat Firma</th>
+              <th scope="col">Kat Kayıt Tarihi</th>
+              <th scope="col">Kat Kayıt Kullanıcısı</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for kat in katlar  %}
+            <tr>
+              <th scope="row">{{kat.id}}</th>
+              <td>{{kat.kat_ad}}</td>
+              <form method="POST" action="{% url 'kat_düzenle' firma.firma_kod kat.id %}">
+                {% csrf_token %}
+                <td>
+                  <input type="checkbox" name="kat_durum" id="id_kat_durum" {% if kat.kat_durum %}checked{% endif %}>
+              </td>
+              <td>
+                <input type="text"  id="kat_ad" name="kat_ad" class="form-control" placeholder="Yeni Kat Adını Giriniz">
+              </td>
+              <td>
+                <button type="submit" class="btn btn-primary"> Güncelle</button>
+              </td>
+            </form>
+              {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+              <td>{{kat.kat_frm_kod}}</td>
+              <td>{{kat.kat_kayit_tar}}</td>
+              <td>{{kat.kat_kayit_user}}</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+        
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+  Ürün Ekleme Modalı
+-->
+<div class="modal fade" id="urunEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'urun_ekle' firma.firma_kod %}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+        {{urunForm.as_p}}
+        <button type="submit" class="btn btn-success">Kaydet</button>
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+  Kategori Ekleme Modalı
+-->
+<div class="modal fade" id="kategoriEkle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'kategori_ekle' firma.firma_kod %}" enctype="multipart/form-data" method="POST">
+
+          {% csrf_token %}
+        {{kategoriForm.as_p}}
+        <button type="submit"></button>
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+  Kategori Ekleme Modalı
+-->
+<!--
+  Ürünler Modalı
+-->
+<div class="modal fade" id="urunler" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable ">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">       
+        <table class="table">
+          <thead>            
+            <tr>
+              <th scope="col">urun_id</th>
+              <th scope="col">Ürün Adı</th>
+              <th scope="col">Yeni Ürün Adı</th>
+              <th scope="col">ürün kategori</th>
+              <th scope="col">Yeni ürün kategori</th>
+              <th scope="col">ürün fiyat</th>
+              <th scope="col">yeni ürün fiyat</th>
+              <th scope="col">Yeni ürün durum</th>
+              {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+              <th scope="col">Kayıt Yapan Kul.</th>
+              <th scope="col">Kayıt Zamanı</th>
+              <th scope="col">Firma Kodu</th>
+              <th scope="col">Firma Adı </th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for urun in urunler  %}
+            <tr>
+              <form method="POST" action="{% url 'toplu_urun_guncelle' firma.firma_kod %}">
+                {% csrf_token %}
+                <input type="hidden" name="ürün_id" value="{{ urun.id }}"> <!-- Ürün ID'si hidden input ile eklenmeli -->
+                <th scope="row">{{ urun.id }}</th>
+                <td>{{ urun.urun_ad }}</td>
+                <td><input name='ürün_adi' type="text"></td>
+                <td>{{ urun.urun_kategori }}</td>
+                <td>
+                  <select name="ürün_kategori" class="form-select" aria-label="Default select example">
+                    <option value="{{ urun.urun_kategori.id }}" selected>{{ urun.urun_kategori }}</option>
+                    {% for kategori in kategoriler  %}
+                    <option value="{{ kategori.id }}">{{ kategori.kategori_ad }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>{{ urun.urun_fiyat }}₺</td>
+                <td><input class="form-control" name="ürün_fiyat" type="text"></td>
+                <td><input value="True" name="ürün_durum" type="checkbox" {% if urun.urun_durum == True %}checked{% endif %}></td>
+                <td>
+                  <button type="submit" class="btn btn-primary">Güncelle</button>
+                </td>
+                {% if request.user.username == 'orqerr' and request.user.user_frm_kod == '-1' %}
+                <td>{{ urun.urun_kayit_user }}</td>
+                <td>{{ urun.urun_kayit_zaman|date:"D d F Y" }}</td>
+                <td>{{ urun.urun_frm_kod }}</td>
+                <td>{{ urun.urun_frm.firma_adi }}</td>
+                {% endif %}
+              
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="topluGuncelleBtn" type="submit" class="btn btn-primary">Toplu Güncelle</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  document.getElementById('topluGuncelleBtn').addEventListener('click', function() {
+    var formData = new FormData();
+    var urunIdInputList = document.querySelectorAll('input[name="ürün_id"]');
+
+    urunIdInputList.forEach(function(urunIdInput) {
+        var form = urunIdInput.closest('form');
+        var urunAdiInput = form.querySelector('input[name="ürün_adi"]');
+        var urunFiyatiInput = form.querySelector('input[name="ürün_fiyat"]');
+        var urunDurumuCheckbox = form.querySelector('input[name="ürün_durum"]');
+        var urunKategoriSelect = form.querySelector('select[name="ürün_kategori"]');
+
+        // Checkbox'un durumuna göre "true" veya "false" olarak belirle
+        var urunDurumuValue = urunDurumuCheckbox.checked ? 'true' : 'false';
+
+        formData.append('ürün_id', urunIdInput.value);
+        formData.append('ürün_adi', urunAdiInput.value);
+        formData.append('ürün_fiyat', urunFiyatiInput.value);
+        formData.append('ürün_durum', urunDurumuValue); // Checkbox değerini "true" veya "false" olarak ayarla
+        formData.append('ürün_kategori', urunKategoriSelect.value);
+    });
+
+    $.ajax({
+        url: '{% url "toplu_urun_guncelle" firma.firma_kod %}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            console.log(response);
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+        }
+    });
+});
+</script>
+<!--
+  Kategoriler Modalı
+-->
+<div class="modal fade" id="kategoriler" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Kategorileri Güncelle</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'toplu_kategori_guncelle' firma.firma_kod %}">
+          {% csrf_token %}
+          <table class="table text-center">
+            <thead>
+              <tr>
+                <th scope="col">Kategori Kod</th>
+                <th scope="col">Kategori Adı</th>
+                <th scope="col">Yeni Kategori Adı</th>
+                <th scope="col">Kategori Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for kategori in kategoriler %}
+              <tr>
+                <td>{{ kategori.kategori_kod }}</td>
+                <td>{{ kategori.kategori_ad }}</td>
+                <td><input type="text" name="kategori_adi_{{ kategori.id }}" value="{{ kategori.kategori_ad }}"></td>
+                <td>
+                  <input type="checkbox" name="kategori_durum_{{ kategori.id }}" value="on" {% if kategori.kategori_durum %} checked {% endif %}>
+                  <input type="hidden" name="kategori_id_{{ kategori.id }}" value="{{ kategori.id }}">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            <button id="kategoriGuncelleBtn" type="submit" class="btn btn-primary">Kategorileri Güncelle</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#kategoriler form');
+    form.addEventListener('submit', function(event) {
+       // S event.preventDefault(); ayfanın yeniden yüklenmesini engelle
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: form.method,
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // İşlem başarılı olduğunda yapılacak işlemler
+                console.log('Kategoriler başarıyla güncellendi');
+            } else {
+                // Hata durumunda yapılacak işlemler
+                console.error('Kategorileri güncellemede bir hata oluştu');
+            }
+        })
+        .catch(error => {
+            console.error('Bir hata oluştu:', error);
+        });
+    });
+});
+  </script>
+<!--
+  Kategoriler Modalı
+-->
+{% endblock content %}

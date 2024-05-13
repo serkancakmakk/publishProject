@@ -1,0 +1,16 @@
+<form method="post" action="{% url "kullanici_detay" user.unique_id %}">
+    {% csrf_token %}
+    <ul>
+        {% for yetki in yetkiler %}
+            <li>
+                <input type="checkbox"
+                       id="yetki{{ yetki.id }}"
+                       name="yetkiler"
+                       value="{{ yetki.id }}"
+                       {% if yetki in user_yetkileri %}checked{% endif %}>
+                <label for="yetki{{ yetki.id }}">{{ yetki.name }}</label>
+            </li>
+        {% endfor %}
+    </ul>
+    <button type="submit">Yetkileri Güncelle</button>
+</form>
