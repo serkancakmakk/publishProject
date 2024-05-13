@@ -1773,13 +1773,12 @@ def change_password(request, user_id):
 def create_error_report(request):
     if request.method == 'POST':
         error_code = request.POST.get('error_code')
-        error_url = request.POST.get('error_url')
-        
         # Hata raporu modeline veriyi kaydet
         ErrorReport.objects.create(error_code=error_code)
         
         # İstenilen yere yönlendir
-        return HttpResponseRedirect('/success/')  # Başka bir URL'ye yönlendirme
+        messages.success(request, 'Geri Bildiriminiz İçin Teşekkür Ederiz.')
+        return redirect(request.META.get('HTTP_REFERER'))  # Başka bir URL'ye yönlendirme
 
     return render(request, 'your_template.html')  # Hata sayfasını göster
 def delete_error_report(request,id):
