@@ -213,8 +213,8 @@ class Siparis(models.Model):
         (1, 'Bekleyen'),
         (2, 'Hazırlandı'),
         (3, 'Tamamlandı'),
-        (9, 'İptal Edildi'),
         (8, 'İptal Edilip Silindi'),
+        (9, 'İptal Edildi'),
     )
     siparis_durum = models.IntegerField(choices=SIPARIS_DURUM_CHOICES, default=0)
     siparis_kayıt_zaman = models.DateTimeField(auto_now_add=True)
