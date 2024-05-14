@@ -1,13 +1,29 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
+import random
+import string
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-import openpyxl
-
-from .forms import FirmaEkle, KatEkle, KategoriEkle, MasaEkle, UpdateRequestForm, UrunEkle, UserEkle, UserUpdateForm, FirmaDüzenle, KatGüncelle, MasaDüzenle
-
-from .models import ErrorReport, Firma, FirmaUser, Kat, Kategori, Masa, ShortUrl, SiparisUrun, UpdateRequest, Urun, Yetki
-import random,string
+from django.contrib.auth import login, logout
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
+import requests
+from .forms import (FirmaEkle, KatEkle, KategoriEkle, MasaEkle, UpdateRequestForm,
+                    UrunEkle, UserEkle, UserUpdateForm, FirmaDüzenle, MasaDüzenle)
+from .models import (ErrorReport, Firma, FirmaUser, Kat, Kategori, Masa,
+                     ShortUrl, SiparisUrun, UpdateRequest, Urun, Yetki, Siparis)
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+import json
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from kuaförApp.apscheduler import schedule_task
+from datetime import datetime
+import qrcode
+from io import BytesIO
+from django.core.files.base import ContentFile
+import os
+from django.utils import timezone
+from urllib.parse import urlparse, parse_qs
+from datetime import date
 # Firma oluşturma ve listeleme ekranı
 def check_ip_address(request):
     if request.method == 'GET':
@@ -18,9 +34,7 @@ def check_ip_address(request):
             if Firma.objects.filter(firma_dis_ip=ip_adresi).exists():
                 return JsonResponse({'exists': True})
     return JsonResponse({'exists': False})
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-# sadece orqerr erişebilir
-from django.contrib.auth.decorators import login_required
+
 @login_required(login_url='user_giris')
 def firma_ekle(request):
     yetki = get_object_or_404(Yetki, user=request.user)
@@ -196,8 +210,7 @@ def user_ekle(request, firma_kod):
         user_form = UserEkle()
     
     return render(request, 'user_create.html', {'user_form': user_form})
-import requests
-from django.contrib.auth import authenticate, login
+
 def user_giris(request):
     # Gelen istekten IP adresini al
     real_ip = request.META.get('HTTP_X_REAL_IP')
@@ -230,9 +243,7 @@ def user_giris(request):
     }
     return render(request, 'user_giris.html', context)
 
-from django.contrib.auth import authenticate, login
 
-from django.contrib.auth import authenticate, login
 def check_company_agreement():
     today = date.today()
     expired_companies = Firma.objects.filter(firma_bit_tar__lt=today)
@@ -313,12 +324,11 @@ def user_login(request):
                 
             login(request, user)
             return redirect('admin_dashboard', firma_kod=user.user_frm_kod)
-from django.contrib.auth import logout
+
 def user_logout(request):
     logout(request)
     return redirect('user_giris')
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import login_required, user_passes_test
+
 
 def tum_kullanicilar(request):
     if request.user.user_frm_kod == "-1":
@@ -335,7 +345,6 @@ def tum_kullanicilar(request):
         messages.warning(request, 'Bu Sayfaya Erişemezsiniz.')
         return redirect(user_giris)
 
-from django.contrib.auth.models import Permission
 @login_required
 def kullanici_detay(request, uuid4):
     user = get_object_or_404(FirmaUser, unique_id=uuid4)
@@ -358,10 +367,6 @@ def kullanici_detay(request, uuid4):
             'user_yetkileri': user_yetkileri,
         }
         return render(request, 'admin_alani/kullanici_detay.html', context)
-    
-    import openpyxl
-from django.shortcuts import render
-from .models import Firma
 
 def excel_aktar(request):
     if request.method == 'POST' and request.FILES['excel_file']:
@@ -426,10 +431,6 @@ def kat_ekle(request, firma_kod):
         pass
 # Kat düzenle
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Firma, Kat, Yetki
-
 def kat_düzenle(request, firma_kod):
     user_id = request.user.id
 
@@ -488,10 +489,7 @@ def kat_düzenle(request, firma_kod):
 
         
 # Masa Ekle
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .forms import MasaEkle
-from .models import Firma, Kat, Masa
+
 
 def masa_ekle(request, firma_kod):
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
@@ -530,9 +528,7 @@ def masa_ekle(request, firma_kod):
         return render(request, 'masa_ekle.html', {'form': form, 'firma_kod': firma_kod})
     else:
         return redirect('admin_dashboard',firma_kod = request.user.user_frm_kod)
-from django.http import JsonResponse
 
-import json
 
 def get_user_location(request):
     if request.method == 'POST':
@@ -864,9 +860,7 @@ def toplu_urun_guncelle(request, firma_kod):
     else:
         messages.error(request,'istek yapılan firma size ait görünmüyor.')
         return redirect('admin_dashboard',firma_kod = firma_kod)
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt  # CSRF korumasını devre dışı bırakmak için eklenmiştir
+
 
 def toplu_kategori_guncelle(request,firma_kod):
     firma = get_object_or_404(Firma,firma_kod =firma_kod)
@@ -902,38 +896,6 @@ def toplu_kategori_guncelle(request,firma_kod):
 #         'kategorili_ürünler': kategorili_ürünler,
 #     }
 #     return render(request, 'siparis_ver.html', context)
-from django.http import JsonResponse
-import json
-from .models import Siparis
-import csv
-def import_urun_from_excel(request):
-    if request.method == "POST" and request.FILES.get("excel_file"):
-        excel_file = request.FILES['excel_file']
-
-        if not excel_file.name.endswith(('.xls', '.xlsx')):
-            return render(request, 'error.html', {'message': 'Lütfen bir Excel dosyası yükleyin.'})
-
-        # Excel dosyasını oku ve veritabanına ekle
-        excel_data = xlrd.open_workbook(file_contents=excel_file.read())
-        sheet = excel_data.sheet_by_index(0)  # İlk çalışma sayfasını kullan
-
-        for row_num in range(1, sheet.nrows):  # Başlık satırını atla
-            row = sheet.row_values(row_num)
-            urun = Urun.objects.create(
-                urun_frm_kod=row[0],
-                urun_frm=Firma.objects.get(firma_kod=row[1]),  
-                urun_ad=row[2],
-                urun_kategori=Kategori.objects.get(kategori_adi=row[3]),  
-                urun_durum=row[4],
-                urun_fiyat=row[5],
-                urun_kayit_user=row[6],
-                urun_kayit_zaman=row[7]
-            )
-            print(urun)
-
-        return render(request, 'excel_aktar.html', {'message': 'Excel dosyası başarıyla yüklendi.'})
-    else:
-        return render(request, 'excel_aktar.html', {'message': 'Lütfen bir dosya seçin ve yüklediğiniz dosyanın uygun bir format olduğundan emin olun.'})
 
 def siparis_olustur(request, firma_kod):
     if request.method == 'POST':
@@ -1048,16 +1010,7 @@ def siparis_bar_takip(request, firma_kod):
     
     return render(request, 'siparis_bar_takip.html', context)
         
-        
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-# views.py
 
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from kuaförApp.apscheduler import delete_expired_update_requests, delete_expired_update_requests_task, schedule_task
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime, timedelta
 def siparis_durumu_hazir(request,
     firma_kod, siparis_id):
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
@@ -1197,14 +1150,7 @@ def masa_detay(request, firma_kod, masa_num, kat_ad):
         'short_url': short_url,
     }
     return render(request, 'masa_detay.html', context)
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import ShortUrl, Firma, Masa
-import string
-import random
-import qrcode
-from io import BytesIO
-from django.core.files.base import ContentFile
+
 def generate_short_url():
     letters_and_digits = string.ascii_letters + string.digits
     short_url = ''.join(random.choice(letters_and_digits) for i in range(8))
@@ -1226,8 +1172,7 @@ def create_qr_code_image(data):
     qr_img.save(byte_io, format='PNG')
 
     return ContentFile(byte_io.getvalue())
-from django.core.files import File
-import os
+
 def add_short_url(request, firma_kod, masa_kat, masa_num):
     if request.method == "POST":
         print('Masa Kat', masa_kat)
@@ -1294,9 +1239,7 @@ def masa_durum_degistir(request,firma_kod,id):
     
     messages.add_message(request, messages.SUCCESS, "Masa Durumu Değiştirildi.")
     return redirect(request.META.get('HTTP_REFERER'))
-from django.utils import timezone
-from datetime import timedelta
-from datetime import datetime
+
 def siparis_ekranina_git(request,firma_kod):
     try:
         short_url_obj = ShortUrl.objects.filter(url_frm_kod=firma_kod).first()
@@ -1352,9 +1295,7 @@ def siparis_ver(request, short_url):
     return render(request, 'siparis_ver.html', context)
 
 
-    
-from urllib.parse import urlencode, urlparse, parse_qs
-from datetime import datetime, timedelta
+ 
 def admin_dashboard(request, firma_kod):
     if not request.user.is_authenticated:
          return redirect('user_giris')
@@ -1460,8 +1401,6 @@ def admin_dashboard(request, firma_kod):
 
     return render(request, 'admin_alani/admin_dashboard.html', context)
 import uuid
-from django.http import Http404
-from django.core.exceptions import ValidationError
 ## uuid_kontrolünden geçir
 def is_valid_uuid(val):
     try:
@@ -1495,7 +1434,6 @@ def user_detail(request, firma_kod, uuid4):
         'user': user,
     }
     return render(request, 'admin_alani/user_detail.html', context)
-from django.core.exceptions import ObjectDoesNotExist
 def yetki_ver(request, firma_kod, uuid4):
     # Kullanıcı nesnesini al
     yetki = get_object_or_404(Yetki,user=request.user)
@@ -1567,9 +1505,7 @@ def yetki_ver(request, firma_kod, uuid4):
 
     # Eğer POST isteği değilse veya başarısız bir işlem varsa ana sayfaya yönlendir
     return redirect('home_url')
-from django.http import HttpResponseServerError
-import logging
-from datetime import date
+
 def user_update(request, firma_kod, uuid4):
     today = date.today()
     user = get_object_or_404(FirmaUser, unique_id=uuid4)
@@ -1613,15 +1549,6 @@ def user_update(request, firma_kod, uuid4):
     except Exception as e:
         print(e)
         return HttpResponseServerError("Güncelleme işlemi sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.")
-def id_bul(request):
-    yetkiler = Permission.objects.all()
-    context = {
-        'yetkiler':yetkiler,
-    }
-    return render(request,'id_bul.html',context)
-def user_logout(request):
-    logout(request)
-    return redirect('user_giris')
 def hata_bildir(request):
     pass
 def y(user, permission_name):
@@ -1711,33 +1638,7 @@ def company_update_requests(request):
         'requests':requests,
     }
     return render(request,'admin_alani/update_requests.html',context)
-from .models import UpdateRequest
-def close_update_request(request,firma_kod):
-    user = request.user
-    try:
-        update_request = get_object_or_404(UpdateRequest,req_company_code = firma_kod)
-
-    except:
-        messages.info(request, "Güncelleme Talebi Bulunamadı")
-        return redirect(request.META.get('HTTP_REFERER'))
-    if not request.method == 'POST':
-        messages.info(request, "Bu istekler kabul edilmez")
-        return redirect(request.META.get('HTTP_REFERER'))
-    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
-            (user.user_frm_kod == '-1' and user.yetkiler_guncelleme_talepleri)): # admin değilse veya güncelleme talep yetkisi yoksa
-            messages.success(request,'Bu işleme yetkiniz bulunmuyor.')
-            return redirect('admin_dashboard',request.user.user_frm_kod)
-    update_request.is_active = False
-    # delete_expired_update_requests_task()       
-    update_request.save()
-    messages.success(request,'Güncelleme Talebi İşleme Alındı')
-    return redirect(request.META.get('HTTP_REFERER'))
-def undo_update_request(request,firma_kod):
-    if request.method == 'POST':
-        update_request = get_object_or_404(UpdateRequest,req_company_code=firma_kod)
-        update_request.is_active =True
-        update_request.save()
-        return redirect(request.META.get('HTTP_REFERER'))
+#user için kullanılan işlemler
 def change_password(request, user_id):
     try:
         user = get_object_or_404(FirmaUser, id=user_id)
@@ -1768,8 +1669,36 @@ def change_password(request, user_id):
     user.password = new_password
     user.save()
     messages.success(request, 'Şifre Değiştirildi')
+    return redirect(request.META.get('HTTP_REFERER'))  
+# Hata kodları için kullanılanlar
+def close_update_request(request,firma_kod):
+    user = request.user
+    try:
+        update_request = get_object_or_404(UpdateRequest,req_company_code = firma_kod)
+
+    except:
+        messages.info(request, "Güncelleme Talebi Bulunamadı")
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not request.method == 'POST':
+        messages.info(request, "Bu istekler kabul edilmez")
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
+            (user.user_frm_kod == '-1' and user.yetkiler_guncelleme_talepleri)): # admin değilse veya güncelleme talep yetkisi yoksa
+            messages.success(request,'Bu işleme yetkiniz bulunmuyor.')
+            return redirect('admin_dashboard',request.user.user_frm_kod)
+    update_request.is_active = False
+    # delete_expired_update_requests_task()       
+    update_request.save()
+    messages.success(request,'Güncelleme Talebi İşleme Alındı')
     return redirect(request.META.get('HTTP_REFERER'))
-    
+def undo_update_request(request,firma_kod):
+    if request.method == 'POST':
+        update_request = get_object_or_404(UpdateRequest,req_company_code=firma_kod)
+        update_request.is_active =True
+        update_request.save()
+        return redirect(request.META.get('HTTP_REFERER'))
+
+     
 def create_error_report(request):
     if request.method == 'POST':
         error_code = request.POST.get('error_code')
