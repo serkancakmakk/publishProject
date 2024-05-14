@@ -8,7 +8,7 @@ urlpatterns = [
     # orqerr hızlı işlemler
     path('firma_durumunu_aktiflestir/<str:firma_kod>/', views.firma_durumunu_aktiflestir, name='firma_durumunu_aktiflestir'),
     path('', views.user_giris, name='user_giris'),
-    path('id_bul', views.id_bul, name='id_bul'),
+    # path('id_bul', views.id_bul, name='id_bul'),
     path('api/get-user-location/', views.get_user_location, name='get_user_location'),
     path('firma_ekle', views.firma_ekle, name='firma_ekle'),
     path('firma_düzenle/<int:pk>/<str:firma_kod>/', views.firma_düzenle, name='firma_düzenle'),

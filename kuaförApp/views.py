@@ -21,6 +21,7 @@ import qrcode
 from io import BytesIO
 from django.core.files.base import ContentFile
 import os
+from django.core.files import File
 from django.utils import timezone
 from urllib.parse import urlparse, parse_qs
 from datetime import date
@@ -1184,12 +1185,12 @@ def add_short_url(request, firma_kod, masa_kat, masa_num):
         # Eski QR kodunu kontrol et ve sil
         existing_short_url_obj = ShortUrl.objects.filter(url_masa_num=masa)
         print('Esli qr bulundu',existing_short_url_obj)
-        if existing_short_url_obj.exists():
-            existing_short_url_obj = existing_short_url_obj.first()
-            if existing_short_url_obj.url_qr_code:
-                os.remove(existing_short_url_obj.url_qr_code.path)
-                existing_short_url_obj.delete()
-                print('Eski qr silin isilindi')
+        # if existing_short_url_obj.exists():
+        #     existing_short_url_obj = existing_short_url_obj.first()
+        #     if existing_short_url_obj.url_qr_code:
+        #         os.remove(existing_short_url_obj.url_qr_code.path)
+        #         existing_short_url_obj.delete()
+        #         print('Eski qr silin isilindi')
 
         # Kısa URL oluşturulduktan sonra veritabanına kaydedilir
         short_url_obj = ShortUrl.objects.create(url=short_url, url_frm=firma, url_frm_kod=firma_kod,
@@ -1197,7 +1198,7 @@ def add_short_url(request, firma_kod, masa_kat, masa_num):
                                                 url_masa_num=masa, url_masa_kat=masa.masa_kat)
 
         # Resim dosyasını oluşturun
-        qr_code_url = f"http://192.168.1.5:8000/siparis_ver/{short_url}"
+        qr_code_url = f"http://188.132.202.38/siparis_ver/{short_url}"
         qr_code_image = create_qr_code_image(qr_code_url)  # create_qr_code_image fonksiyonunu tanımlamanız gerekiyor
 
         # QR kodu resmini ShortUrl nesnesine yükleyin
