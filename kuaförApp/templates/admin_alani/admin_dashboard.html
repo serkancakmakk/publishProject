@@ -13,6 +13,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="{% static 'js/kat_düzenle.js' %}"></script>
+    <script src="{% static 'js/table_edit.js' %}"></script>
     <!-- Bootstrap JavaScript dosyaları -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -675,7 +676,6 @@ myModal.show();
         <div class="AdminScreen">
           <div class="cardHeader">
             <h2>Masa Bilgilerim</h2>
-            <a href="#" class="btn">View All</a>
           </div>
           <table class="text-center">
             <thead>
@@ -709,90 +709,8 @@ myModal.show();
                   ><i class="fas fa-edit icon"></i>
                 </button>
                 </td>
-                <!-- Masa Düzenleme Modalı -->
-                <div class="modal fade" id="masaDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                      <div class="modal-content">
-                          <div class="modal-header">
-                              <h5 class="modal-title" id="table_info"></h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" id="btn-close" aria-label="Close"></button>
-                          </div>
-                          <form method="POST" action="{% url "masa_düzenle" firma.firma_kod %}">
-                              {% csrf_token %}
-                              <input type="hidden" name="masa_id" id="masaIdInput">
-                              <div class="modal-body">
-                                  <div class="mb-3">
-                                      <label for="masaNumInput" class="form-label">Masa Numarası</label>
-                                      <input type="text" name="yeni_masa_num" class="form-control" id="masaNumInput">
-                                  </div>
-                                  <div class="mb-3">
-                                      <label for="selectedKat1" class="form-label">Masa Kat</label>
-                                      <select name="yeni_kat_id" class="form-select" id="selectedKat1" aria-label="Default select example">
-                                          <option id="selectedKat" value="" selected></option>
-                                          {% for kat in katlar %}
-                                          <option value="{{ kat.id }}">{{ kat.kat_ad }}</option>
-                                          {% endfor %}
-                                      </select>
-                                  </div>
-                                  <div class="mb-3">
-                                      <label for="masaDurumInput" class="form-label">Masa Durum</label>
-                                      <div class="form-check form-switch">
-                                          <input class="form-check-input" name="yeni_masa_durum" type="checkbox" value="on" role="switch" id="masaDurumInput">
-                                      </div>
-                                  </div>
-                              </div>
-                              <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" id="btn-close" data-bs-dismiss="modal">Vazgeç</button>
-                                  <button type="submit" class="btn btn-primary">Kaydet</button>
-                              </div>
-                          </form>
-                      </div>
-                  </div>
-              </div>
-                <script>
-                  document.addEventListener('DOMContentLoaded', function() {
-                    var editButtons = document.querySelectorAll('.masa-edit-btn');
-                    editButtons.forEach(function(button) {
-                      button.addEventListener('click', function() {
-                        var masaId = button.dataset.masaId;
-                        var masaNum = button.dataset.masaNum;
-                        var masaKat = button.dataset.masaKat;
-                        var selectedKatAd = button.dataset.masaKat;
-                        var masaKatId = button.dataset.masaKatId;
-                        var masaDurum = button.dataset.masaDurum;
-                        console.log('Seçilen KAt adı',selectedKatAd);
-                        var modal = new bootstrap.Modal(document.getElementById('masaDüzenleModal'));
-                        var masaDurumInput = document.getElementById('masaDurumInput');
-                        var masaNumInput = document.getElementById('masaNumInput');
-                        var masaIdInput = document.getElementById('masaIdInput');
-                        var selectedKatOption = document.getElementById('selectedKatOption');
-                        var selectedKat = document.getElementById('selectedKat');
-                        var modalTitle = document.getElementById('table_info');
-                        modalTitle.textContent = 'Düzenlenen Masa: ' + masaNum + ' (' + selectedKatAd + ')';
-                        masaDurumInput.checked = masaDurum === 'True'; // Boolean değer checkbox'a atanır
-                        masaNumInput.value = masaNum;
-                        masaIdInput.value = masaId;
-                        selectedKat.textContent = selectedKatAd;
-                        selectedKat.value = masaKatId;
-                        masaDurumInput
-                        modal.show();
-                
-                           // Modal kapatma işlevselliği ekle
-          var closeModalButton = document.querySelector('#btn-close');
-          closeModalButton.addEventListener('click', function() {
-              modal.hide();
-          });
+               
 
-          // Modal dışındaki bir yere tıklandığında da modalı kapat
-          document.addEventListener('click', function(event) {
-              if (event.target === document.querySelector('.modal.fade.show')) {
-                  modal.hide();
-              }
-          });
-                      });
-                    });
-                  });
-                </script>
                 <!--
   MAsa düzenleme
 -->
@@ -817,8 +735,47 @@ myModal.show();
           </table>
           
         </div>
-        
-        
+         <!-- Masa Düzenleme Modalı -->
+         <!-- Masa Düzenleme Modalı -->
+<div class="modal fade" id="masaDüzenleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="table_info"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="POST" action="{% url 'masa_düzenle' firma.firma_kod %}">
+              {% csrf_token %}
+              <input type="hidden" name="masa_id" id="masaIdInput">
+              <div class="modal-body">
+                  <div class="mb-3">
+                      <label for="masaNumInput" class="form-label">Masa Numarası</label>
+                      <input type="text" name="yeni_masa_num" class="form-control" id="masaNumInput">
+                  </div>
+                  <div class="mb-3">
+                      <label for="selectedKat1" class="form-label">Masa Kat</label>
+                      <select name="yeni_kat_id" class="form-select" id="selectedKat1" aria-label="Default select example">
+                          <option id="selectedKat" value="" selected></option>
+                          {% for kat in katlar %}
+                          <option value="{{ kat.id }}">{{ kat.kat_ad }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="mb-3">
+                      <label for="masaDurumInput" class="form-label">Masa Durum</label>
+                      <div class="form-check form-switch">
+                          <input class="form-check-input" name="yeni_masa_durum" type="checkbox" value="on" role="switch" id="masaDurumInput">
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                  <button type="submit" class="btn btn-primary">Kaydet</button>
+              </div>
+          </form>
+      </div>
+  </div>
+</div>
         <!-- ================= Tanımlar ================ -->
         {% if yetkiler.tanimlari_listele %}        
         <div class="adminInfo">

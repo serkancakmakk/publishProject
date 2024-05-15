@@ -21,6 +21,64 @@
 </li>
 {% endfor %}
 {% endif %}
+{% if masa_durum == False %}
+<div class="container">
+        <div class="error-code">4☕4</div>
+        {% comment %} <img src="https://i.pinimg.com/originals/a3/7d/03/a37d03e9e6ad102a4f84c77413ac2673.gif" style="width: 20%;" alt="Coffee Cup GIF" class="coffee-gif"> {% endcomment %}
+        <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXU0cmQ5NDQ1ZTFjM3piNDFodXhwM2wwcXI2MzE3ZDd2OWl1YjNtNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4IyRkoSzINmukfJ6Bh/giphy.gif" width="400" height="400" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></p>
+        <div class="message">
+            Üzgünüm masa durumu pasif görünüyor sipariş alamam.<br>
+            Şu an sipariş verilemiyor.
+        </div>
+        <a href="" class="back-home">Yetkiliyle iletişime geçin</a>
+    </div>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f4f4;
+    }
+    
+    .container {
+        text-align: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .error-code {
+        font-size: 100px;
+        font-weight: bold;
+        color: #ff6f61;
+    }
+    
+    .message {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .back-home {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #ff6f61;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    
+    .back-home:hover {
+        background-color: #e65b50;
+    }
+</style>
+{% else %}
     <div class="d-flex flex-wrap bd-highlight mb-3 category-wrap-background">
 
         {% for kategori in kategoriler %}
@@ -336,120 +394,58 @@
     }
         </style>
     </div>
-    <footer class="footer">
-        <div class="container">
-          <div class="footer-content">
-            <div class="footer-logo">
-              Logo
-            </div>
-            <div class="footer-links">
-              <ul class="footer-menu">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Contact</a></li>
-              </ul>
-            </div>
-            <div class="footer-social">
-              <ul class="social-icons">
-                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-                <li><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="footer-bottom">
-            <p>&copy; 2023 Your Company. All rights reserved.</p>
-          </div>
+<!-- Start Footer -->
+
+<footer class="text-center text-lg-start bg-dark text-muted">
+    <!-- Section: Social media -->
+    <section class="d-flex justify-content-center justify-content-lg-between p-4 border-bottom">
+        <!-- Left -->
+        <div class="me-5 d-none d-lg-block text-light bg-dark">
+            <span>Bizimle İletişime Geçin</span><br>
+            <hr>
+            <small>0242 242 24 42</small><br>
+
         </div>
-      </footer>
-      <style>
-        .footer {
-            margin-top: auto;
-            position: fixed;
-            font-size: 18px;
-            width: 100%;
-            background-color: #333;
-            color: #fff;
-            padding: 30px 0;
-            height: 100px;
-            border-radius: 10px;
-        }
-        .footer-content {
-            display: grid;
-            grid-template-columns: 25% 50% 25%;
-        }
-        
-          
-        .footer-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-          
-        .footer-menu li {
-            display: inline-block;
-            margin-right: 20px;
-        }
-          
-        .footer-menu li:last-child {
-            margin-right: 0;
-        }
-          
-        .footer-menu a {
-            color: #fff;
-            text-decoration: none;
-        }
-          
-        .social-icons {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-          
-        .social-icons li {
-            display: inline-block;
-            margin-right: 10px;
-        }
-          
-        .social-icons li:last-child {
-            margin-right: 0;
-        }
-          
-        .social-icons a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 20px;
-        }
-          
-        .footer-bottom {
-            margin-top: 20px;
-            text-align: center;
-        }
-          
-        .footer-bottom p {
-            margin: 0;
-        }
-          
-        @media (max-width: 768px) {
-            .footer-content {
-                grid-template-columns: repeat(1, 1fr);
-                row-gap: 20px;
-            }
-            .footer-menu{
-                text-align: left;
-            }
-            .footer-menu li {
-              display: block;
-              margin-bottom: 10px;
-            }
-        }
-          
-        .attribute{
-            position: absolute;
-            bottom: 10px;
-        }
-      </style>
+        <!-- Left -->
+
+        <!-- Right -->
+        <div>
+            <a href="https://www.instagram.com/vikram_4008/" class="me-4 text-reset">
+                <i class="fa-brands fa-instagram" style="color: #f7f7f8;"></i>
+            </a>
+            <a href="https://www.facebook.com/vikram.dhole.1" class="me-4 text-reset">
+                <i class="fa-brands fa-facebook" style="color: #f7f7f7;"></i>
+            </a>
+            <a href="" class="me-4 text-reset">
+                <i class="fa-brands fa-twitter" style="color: #ffffff;"></i>
+            </a>
+            <a href="mailto:vd31134@gmail.com" class="me-4 text-reset">
+                <i class="fa-solid fa-envelope" style="color: #f9fafa;"></i>
+            </a>
+            <a href="tel:+919145479297" class="me-4 text-reset">
+                <i class="fa-solid fa-phone" style="color: #fcfcfc;"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/vikram-dhole-1a2a7721b/" class="me-4 text-reset">
+                <i class="fa-brands fa-linkedin" style="color: #ffffff;"></i>
+            </a>
+            <a href="https://github.com/viks4008" class="me-4 text-reset">
+                <i class="fa-brands fa-github" style="color: #ffffff;"></i>
+            </a>
+            <a href="https://codepen.io/vikram4008" class="me-4 text-reset">
+                <i class="fa-brands fa-phone" style="color: #fafcff;"></i>
+            </a>
+        </div>
+        <!-- Right -->
+    </section>
+    <!-- Section: Social media -->
+
+    <!-- Copyright -->
+    <div class="text-center p-4 text-light bg-dark" style="background-color: rgba(0, 0, 0, 0.05);">
+        © 2024 Copyright:
+        <a class="text-reset fw-bold text-light bg-dark" href="https://mdbootstrap.com/">www.orderqr.com</a>
+    </div>
+    <!-- Copyright -->
+</footer>
+<!-- Footer -->
+{% endif %}
 {% endblock content %}

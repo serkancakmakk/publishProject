@@ -901,7 +901,6 @@ def toplu_kategori_guncelle(request,firma_kod):
 def siparis_olustur(request, firma_kod):
     if request.method == 'POST':
         print('Siparis_oluştura geldi')
-        # print(request.session["short_url"])
         received_data = json.loads(request.body.decode('utf-8'))
         urunler = received_data.get('urunler', [])
         siparis_masa = get_object_or_404(Masa, id=request.session["masa_num"])
@@ -909,8 +908,20 @@ def siparis_olustur(request, firma_kod):
         if not urunler:
             return JsonResponse({'error': 'Boş sipariş alınamaz.'}, status=400)
 
-        son_siparis = Siparis.objects.filter(siparis_frm_kod=firma_kod).last()
-        son_siparis_fis_num = son_siparis.siparis_fis_num + 1 if son_siparis else 0
+        # Mevcut tarihi alın (sadece yıl, ay, gün bilgisi)
+        bugun = timezone.now().date()
+        print(bugun)
+
+        # Bugünün siparişlerini filtrele
+        bugunun_siparisleri = Siparis.objects.filter(siparis_frm_kod=firma_kod, siparis_tar__date=bugun)
+        print('Bugünün siparişleri bulundu', bugunun_siparisleri)
+
+        # Bugünün son siparişinin fiş numarasını al
+        son_siparis = bugunun_siparisleri.last()
+        print('Son sipariş bulundu', son_siparis)
+
+        # print(son_siparis.siparis_fis_num)
+        son_siparis_fis_num = son_siparis.siparis_fis_num + 1 if son_siparis else 1
         
         firma = get_object_or_404(Firma, firma_kod=firma_kod)
         siparis = Siparis.objects.create(
@@ -918,16 +929,18 @@ def siparis_olustur(request, firma_kod):
             siparis_frm=firma,
             siparis_fis_num=son_siparis_fis_num,
             siparis_masa=str(siparis_masa.masa_kat.kat_ad) + "-" + str(siparis_masa.masa_num),
-            siparis_durum = 1
+            siparis_durum=1,
+            siparis_tar=bugun  # Sipariş tarihini ekleyin
         )
-
+        print('OluşturulanSipariş', siparis)
+        
         for urun_data in urunler:
             urun_id = urun_data.get('urun_id')
             miktar = urun_data.get('miktar')
 
             try:
                 urun = Urun.objects.get(pk=urun_id)
-                siparis_urun = SiparisUrun.objects.create(
+                SiparisUrun.objects.create(
                     siparis=siparis,
                     urun=urun,
                     miktar=miktar
@@ -952,7 +965,6 @@ def siparis_olustur(request, firma_kod):
         return JsonResponse({'message': 'Sipariş başarıyla oluşturuldu.'})
     else:
         return JsonResponse({'error': 'Geçersiz istek methodu'}, status=405)
-
 def siparis_takip(request, firma_kod):
     # Firma nesnesini al
     firma = get_object_or_404(Firma, firma_kod=firma_kod)
@@ -1176,7 +1188,7 @@ def create_qr_code_image(data):
 
 def add_short_url(request, firma_kod, masa_kat, masa_num):
     if request.method == "POST":
-        print('Masa Kat', masa_kat)
+        print('Masa Kat:', masa_kat)
         firma = get_object_or_404(Firma, firma_kod=firma_kod)
         masa = get_object_or_404(Masa, masa_frm_kod=firma_kod, masa_firma=firma, masa_kat=masa_kat, masa_num=masa_num)
 
@@ -1184,13 +1196,22 @@ def add_short_url(request, firma_kod, masa_kat, masa_num):
 
         # Eski QR kodunu kontrol et ve sil
         existing_short_url_obj = ShortUrl.objects.filter(url_masa_num=masa)
-        print('Esli qr bulundu',existing_short_url_obj)
-        # if existing_short_url_obj.exists():
-        #     existing_short_url_obj = existing_short_url_obj.first()
-        #     if existing_short_url_obj.url_qr_code:
-        #         os.remove(existing_short_url_obj.url_qr_code.path)
-        #         existing_short_url_obj.delete()
-        #         print('Eski qr silin isilindi')
+        print('Eski QR bulundu:', existing_short_url_obj)
+        if existing_short_url_obj.exists():
+            existing_short_url_obj = existing_short_url_obj.first()
+            if existing_short_url_obj.url_qr_code:
+                qr_code_path = existing_short_url_obj.url_qr_code.path
+                if os.path.exists(qr_code_path):
+                    os.remove(qr_code_path)
+                    print(f'Eski QR kodu silindi: {qr_code_path}')
+                else:
+                    print(f'QR kodu dosyası bulunamadı: {qr_code_path}')
+            else:
+                print('QR kodu mevcut değil.')
+            existing_short_url_obj.delete()
+            print('Eski ShortUrl nesnesi silindi.')
+        else:
+            print('Eski ShortUrl nesnesi bulunamadı.')
 
         # Kısa URL oluşturulduktan sonra veritabanına kaydedilir
         short_url_obj = ShortUrl.objects.create(url=short_url, url_frm=firma, url_frm_kod=firma_kod,
@@ -1208,11 +1229,11 @@ def add_short_url(request, firma_kod, masa_kat, masa_num):
         masa.masa_short_url = short_url
         masa.save()
         
-        # Send success message to the page
+        # Başarılı mesajı gönderin
         messages.success(request, f'QR code ve kısa URL başarıyla oluşturuldu: {short_url}')
         
         # Oluşturulan kısa URL'ye göre bir QR kodu oluşturulur
-        return redirect('masa_detay',firma_kod=firma_kod,masa_num=masa.masa_num,kat_ad=masa.masa_kat.kat_ad)
+        return redirect('masa_detay', firma_kod=firma_kod, masa_num=masa.masa_num, kat_ad=masa.masa_kat.kat_ad)
     else:
         return HttpResponseBadRequest("Only POST requests are allowed.")
 # HIZLI MASA İŞLEMLERİ
@@ -1265,22 +1286,33 @@ def siparis_ekranina_git(request,firma_kod):
         'kategorili_ürünler': kategorili_ürünler,
     }
     return render(request, 'siparis_ver.html', context)
+from datetime import timedelta
 def siparis_ver(request, short_url):
-    request.session['user_tag'] = 'müsteri'
-    if 'short_url' in request.session and request.session['short_url'] != short_url:
-    # Eski kısa URL'in bağlı olduğu masa bilgisini contexte ekle
-        eski_masa = Masa.objects.get(masa_short_url=request.session['short_url'])
-        context = {'eski_masa': eski_masa}
-        return render(request, 'error.html', context)
+    current_time = timezone.localtime(timezone.now())
+
+    # Kullanıcının son bağlandığı masanın zaman damgasını ve masa ID'sini al
+    last_connected_time = request.session.get('last_connected_time')
+    last_masa_id = request.session.get('masa_num')
     
-    if 'short_url' not in request.session:
-        print('Kullanıcı ilk defa bağlanıyor')
+    if last_connected_time:
+        last_connected_time = timezone.datetime.strptime(last_connected_time, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.get_current_timezone())
+        time_difference = current_time - last_connected_time
+        
+        # Eğer son bağlantıdan itibaren 5 dakika geçmemişse
+        if time_difference < timedelta(seconds=10):
+            messages.error(request, 'Yeni bir masaya bağlanmak için 5 dakika beklemeniz gerekmektedir.')
+            return render(request, 'error.html')  # Kullanıcıya bir hata sayfası göster
+    else:
+        request.session['last_connected_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
     
     short_url_obj = get_object_or_404(ShortUrl, url=short_url)
     request.session['short_url'] = short_url
     masa = get_object_or_404(Masa, masa_short_url=short_url_obj)
+    print('Masa Bulundu', masa)
+    masa_durum = masa.masa_durum
+    print(masa_durum)
     request.session['masa_num'] = masa.id
-    request.session['masa_zamani'] = timezone.localtime(timezone.now()).strftime("%Y-%m-%d %H:%M:%S")
+    request.session['masa_zamani'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
     firma = short_url_obj.url_frm
     kategoriler = Kategori.objects.filter(kategori_frm=firma, kategori_frm_kod=firma.firma_kod)
         
@@ -1288,7 +1320,17 @@ def siparis_ver(request, short_url):
     for kategori in kategoriler:
         kategorili_ürünler[kategori] = Urun.objects.filter(urun_frm=firma, urun_frm_kod=firma.firma_kod, urun_kategori=kategori)
 
+    # Eğer son bağlanılan masa ile şu an bağlanılmak istenen masa farklı ise
+    if last_masa_id and last_masa_id != masa.id:
+        messages.error(request, 'Lütfen önceki masadan çıkış yapınız.')
+        return render(request, 'error.html')  # Kullanıcıya bir hata sayfası göster
+    
+    # Son bağlanma zamanını ve masa ID'sini güncelle
+    request.session['last_connected_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    request.session['masa_num'] = masa.id
+
     context = {
+        'masa_durum': masa_durum,
         'firma': firma,
         'kategoriler': kategoriler,
         'kategorili_ürünler': kategorili_ürünler,

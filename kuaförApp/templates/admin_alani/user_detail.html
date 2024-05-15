@@ -265,7 +265,8 @@ font-family: "Poppins", sans-serif;
                     <div class="d-flex flex-column align-items-center text-center">
                     {% if user.user_image %}
                     <img src={{user.user_image.url}} alt="Admin"
-                        class="rounded-circle p-1 bg-warning" width="110">
+                        class="rounded-circle p-1 
+                        {% if user.user_durum == True %}bg-success{% else %} bg-warning {% endif %}" width="110">
                 </div>
                 {% endif %}
                     <h5 class="card-title">Bilgi Güncelle</h5>
