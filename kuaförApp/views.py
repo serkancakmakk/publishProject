@@ -1727,7 +1727,7 @@ def close_update_request(request,firma_kod):
         return redirect(request.META.get('HTTP_REFERER'))
     if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or 
             (user.user_frm_kod == '-1' and user.yetkiler_guncelleme_talepleri)): # admin değilse veya güncelleme talep yetkisi yoksa
-            messages.success(request,'Bu işleme yetkiniz bulunmuyor.')
+            messages.error(request,'Bu işleme yetkiniz bulunmuyor.')
             return redirect('admin_dashboard',request.user.user_frm_kod)
     update_request.is_active = False
     # delete_expired_update_requests_task()       
@@ -1764,4 +1764,31 @@ def delete_error_report(request,id):
     error_report = get_object_or_404(ErrorReport,id = id)
     error_report.delete()
     messages.success(request, 'Hata bildirimi silindi')
+    return redirect(request.META.get('HTTP_REFERER'))
+def change_parameters(request, firma_kod):
+    user = request.user
+    print('Parametre Firması Bulundu', firma_kod)
+    try:
+        # Burada firma modelini ve ilgili alanı belirtmelisiniz
+        firma = get_object_or_404(Firma, firma_kod=firma_kod)
+        print('Parametre Değişiklik Firması Bulundu')
+    except Exception as e:
+        messages.error(request, 'Firma Bulunamadı')
+        print(f'Error: {e}')  # Hatanın ne olduğunu yazdırın
+        return redirect('admin_dashboard', user.user_frm_kod)
+    
+    if not ((user.username == 'orqerr' and user.user_frm_kod == '-1') or
+            (user.user_frm_kod == '-1' and user.yetkiler.parametre_degistir)):
+        messages.error(request, 'Bu değişikliği yapmak için yetkiniz bulunmuyor')
+        return redirect(request.META.get('HTTP_REFERER'))
+    if not request.method == "POST":
+        messages.error(request, 'Bu istek kabul edilmiyor')
+        return redirect(request.META.get('HTTP_REFERER'))
+    price_in_use = request.POST.get('price_in_use')
+    if price_in_use == 'on':
+        firma.price_in_use = True
+        messages.success(request, 'Bu Fiyat parametresi değiştirildi')
+    else:
+        firma.price_in_use = False
+    firma.save()
     return redirect(request.META.get('HTTP_REFERER'))

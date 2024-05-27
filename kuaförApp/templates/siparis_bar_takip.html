@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 <head>
     {% comment %}
@@ -7,7 +8,22 @@
     {% endcomment %}
     
 </head>
-
+{% block icon %}
+<link rel="icon" type="image/x-icon" href="{% static '/project-image/tracking.png' %}">
+{% endblock icon %}
+<title>{{ firma.firma_adi }} | Bar Takip Ekranı </title>
+<style>
+    .badge {
+        background-color: red;
+        color: white;
+        padding: 3px 6px;
+        border-radius: 50%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 12px;
+    }
+</style>
 {% if messages %}
 {% for message in messages %}
 <div class="alert-message">{{ message }}</div>

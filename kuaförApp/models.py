@@ -122,6 +122,7 @@ class Yetki(models.Model):
     urun_guncelle = models.BooleanField(default=False)
     kullanici_kayit= models.BooleanField(default=False)
     firma_sil = models.BooleanField(default=False)
+    parametre_degistir = models.BooleanField(default=False)
     # yetkilendir
     kullanici_yetkilendir = models.BooleanField(default=False)
     # güncelleme ve destek taleplerini gör

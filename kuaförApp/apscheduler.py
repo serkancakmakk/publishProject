@@ -6,7 +6,7 @@ from django.utils import timezone
 from .models import Siparis, UpdateRequest
 def tamamlanmamis_siparisleri_kontrol_et(firma_kod):
     now = timezone.now()
-    five_minutes_ago = now - timezone.timedelta(minute=5)
+    five_minutes_ago = now - timezone.timedelta(minutes=5)
     tamamlanmamis_siparisler = Siparis.objects.filter(siparis_hazir_zaman__lte=five_minutes_ago, siparis_frm_kod=firma_kod, siparis_durum=2)
     
     for siparis in tamamlanmamis_siparisler:
@@ -26,8 +26,8 @@ def iptal_siparisleri_kontrol_et(firma_kod):
 def schedule_task(firma_kod):
     print('schedule_task çalıştı')
     scheduler = BackgroundScheduler()
-    scheduler.add_job(tamamlanmamis_siparisleri_kontrol_et, 'interval', minutes=10, args=[firma_kod])
-    scheduler.add_job(iptal_siparisleri_kontrol_et, 'interval', minutes=10, args=[firma_kod])
+    scheduler.add_job(tamamlanmamis_siparisleri_kontrol_et, 'interval', minutes=1, args=[firma_kod])
+    scheduler.add_job(iptal_siparisleri_kontrol_et, 'interval', minutes=1, args=[firma_kod])
 
 
     scheduler.start()

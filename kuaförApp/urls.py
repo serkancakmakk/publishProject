@@ -99,4 +99,6 @@ urlpatterns = [
     # hata bildirimi
     path('hata_bildir/',views.create_error_report,name="hata_bildir"),
     path('hata_sil/<int:id>',views.delete_error_report,name="hata_sil"),
-  ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('change_parameters/<str:firma_kod>',views.change_parameters,name="parametre_degistir"),
+
+  ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -629,7 +629,7 @@ myModal.show();
       </div>
         <div class="card">
           <div>
-            <div class="boldText">284</div>
+            <div class="boldText">284{{firma.price_in_use}}</div>
             <div class="cardName">Comments</div>
           </div>
           <style>
@@ -1977,12 +1977,19 @@ myModal.show();
         <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        ...
+      <form action="{% url "parametre_degistir" firma.firma_kod %}" method="POST">
+      {% csrf_token %}
+        <div class="modal-body">
+        <div class="form-check form-switch">
+          <input class="form-check-input" name='price_in_use'type="checkbox" role="switch" id="flexSwitchCheckDefault">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Fiyat Kullanılıyor mu ?</label>
+        </div>
       </div>
+      
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </form>
       </div>
     </div>
   </div>

@@ -14,7 +14,7 @@ class FirmaEkle(forms.ModelForm):
 class FirmaDüzenle(forms.ModelForm):
     class Meta:
         model = Firma
-        fields = ['firma_adi', 'firma_ünvan', 'firma_adres','firma_telefon','firma_telefon2','firma_sehir','firma_ilce','firma_dis_ip','firma_durum','firma_bit_tar',]
+        fields = ['firma_adi', 'firma_ünvan', 'firma_adres','firma_telefon','firma_telefon2','firma_sehir','firma_ilce','firma_dis_ip','firma_durum','firma_bit_tar','price_in_use']
 ###
         ####
                 ####
